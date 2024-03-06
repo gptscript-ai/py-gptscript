@@ -3,7 +3,7 @@ class Tool:
         self,
         name="",
         description="",
-        tools="",
+        tools=[],
         max_tokens=None,
         model="",
         cache=True,
@@ -31,8 +31,9 @@ class Tool:
             tool += f"Name: {self.name}\n"
         if self.description != "":
             tool += f"Description: {self.description}\n"
-        if self.tools != "":
-            tool += f"Tools: {self.tools}\n"
+        if len(self.tools) > 0 and self.tools:
+            tools = ", ".join(self.tools)
+            tool += f"Tools: {tools}\n"
         if self.max_tokens is not None:
             tool += f"Max tokens: {self.max_tokens}\n"
         if self.model != "":
@@ -52,3 +53,11 @@ class Tool:
             tool += self.instructions
 
         return tool
+
+
+class FreeForm:
+    def __init__(self, content=""):
+        self.content = content
+
+    def __str__(self):
+        return self.content

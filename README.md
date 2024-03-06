@@ -84,9 +84,28 @@ print(tools)
 This function executes a tool and returns the response.
 
 ```python
-from gptscript.command import exec, complex_tool
+from gptscript.command import exec
+from gptsript.tool import Tool
 
-response = exec(complex_tool())
+tool = Tool(
+    json_response=True,
+    instructions="""
+Create three short graphic artist descriptions and their muses. 
+These should be descriptive and explain their point of view.
+Also come up with a made up name, they each should be from different
+backgrounds and approach art differently.
+the response should be in JSON and match the format:
+{
+   artists: [{
+      name: "name"
+      description: "description"
+   }]
+}
+""",
+    )
+
+
+response = exec(tool)
 print(response)
 ```
 
@@ -97,7 +116,7 @@ This function executes a tool from a file and returns the response.
 ```python
 from gptscript.command import exec_file
 
-response = exec_file("./init.gpt")
+response = exec_file("./example.gpt")
 print(response)
 ```
 
@@ -107,8 +126,26 @@ This function streams the execution of a tool and returns the output, error, and
 
 ```python
 from gptscript.command import stream_exec, complex_tool
+from gptsript.tool import Tool
 
-out, err, wait = stream_exec(complex_tool())
+tool = Tool(
+    json_response=True,
+    instructions="""
+Create three short graphic artist descriptions and their muses. 
+These should be descriptive and explain their point of view.
+Also come up with a made up name, they each should be from different
+backgrounds and approach art differently.
+the response should be in JSON and match the format:
+{
+   artists: [{
+      name: "name"
+      description: "description"
+   }]
+}
+""",
+    )
+
+out, err, wait = stream_exec(tool)
 print(out)
 print(err)
 wait()
@@ -130,13 +167,14 @@ wait()
 ## Example Usage
 
 ```python
-from gptscript.tool import Tool
+from gptscript.command import exec
+from gptscript.tool import FreeForm, Tool
 
 # Define a simple tool
-simple_tool = Tool(
-    instructions="""
-    This tool is used to generate a simple prompt
-    """
+simple_tool = FreeForm(
+    content="""
+What is the capitial of the United States?
+"""
 )
 
 # Define a complex tool
@@ -160,6 +198,39 @@ complex_tool = Tool(
 )
 
 # Execute the complex tool
-response = exec(complex_tool)
+response, err = exec(complex_tool)
+print(err)
 print(response)
+
+# Execute the simple tool
+resp, err = exec(simple_tool)
+print(err)
+print(resp)
+```
+
+### Example 2 multiple tools
+
+In this example, multiple tool are provided to the exec function. The first tool is the only one that can exclude the name field. These will be joined and passed into the gptscript as a single gpt script.
+
+```python
+from gptscript.command import exec
+from gptscript.tool import Tool
+
+tools = [
+    Tool(tools=["echo"], instructions="echo hello times"),
+    Tool(
+        name="echo",
+        tools=["sys.exec"],
+        description="Echo's the input",
+        args={"input": "the string input to echo"},
+        instructions="""
+        #!/bin/bash
+        echo ${input}
+        """,
+    ),
+]
+
+resp, err = exec(tools)
+print(err)
+print(resp)
 ```

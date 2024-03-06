@@ -2,6 +2,7 @@ import os
 import sys
 
 from gptscript.exec_utils import exec_cmd, stream_exec_cmd
+from gptscript.tool import FreeForm, Tool
 
 optToArg = {
     "cache": "--cache=",
@@ -34,9 +35,9 @@ def exec(tool, opts={}):
     args = toArgs(opts)
     args.append("-")
     try:
-        out, err = exec_cmd(cmd, args, input=str(tool))
-        print(err)
-        return out
+        tool_str = process_tools(tool)
+        out, err = exec_cmd(cmd, args, input=tool_str)
+        return out, err
     except Exception as e:
         raise e
 
@@ -46,7 +47,8 @@ def stream_exec(tool, opts={}):
     args = toArgs(opts)
     args.append("-")
     try:
-        process = stream_exec_cmd(cmd, args, input=str(tool))
+        tool_str = process_tools(tool)
+        process = stream_exec_cmd(cmd, args, input=tool_str)
         return process.stdout, process.stderr, process.wait
     except Exception as e:
         raise e
@@ -61,8 +63,8 @@ def exec_file(tool_path, input="", opts={}):
     if input != "":
         args.append(input)
     try:
-        out, _ = exec_cmd(cmd, args)
-        return out
+        out, err = exec_cmd(cmd, args)
+        return out, err
     except Exception as e:
         raise e
 
@@ -89,3 +91,31 @@ def toArgs(opts):
         if optToArg.get(opt):
             args.append(optToArg[opt] + val)
     return args
+
+
+def process_tools(tools):
+    if isinstance(tools, Tool):
+        return str(tools)
+
+    if isinstance(tools, list):
+        if len(tools) > 0:
+            if isinstance(tools[0], Tool):
+                return tool_concat(tools)
+            else:
+                raise Exception("Invalid tool type must be [Tool] or FreeForm")
+    elif isinstance(tools, FreeForm):
+        return str(tools)
+    else:
+        raise Exception("Invalid tool type must be [Tool] or FreeForm")
+
+
+def tool_concat(tools=[]):
+    resp = ""
+    if len(tools) == 1:
+        return str(tools[0])
+    for tool in tools:
+        resp = "\n---\n".join([str(tool) for tool in tools])
+
+    print(resp)
+
+    return resp
