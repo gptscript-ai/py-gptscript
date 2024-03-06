@@ -4,3 +4,6 @@ idna==3.6
 requests==2.31.0
 tqdm==4.66.2
 urllib3==2.2.1
+tox==4.14.1
+wheel==0.42.0
+setuptools==69.1.1
