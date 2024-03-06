@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=40.9.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gptscript"
+version = "0.1.0"
+description = "Run gptscripts from Python apps"
+readme = "README.md"
+authors = [{ name = "Bill Maxwell", email = "bill@acorn.io" }]
+license = { file = "LICENSE" }
+urls = { "Homepage" = "http://pypi.python.org/pypi/gptscript/" }
+dependencies = [
+    "certifi==2024.2.2",
+    "charset-normalizer==3.3.2",
+    "idna==3.6",
+    "requests==2.31.0",
+    "tqdm==4.66.2",
+    "urllib3==2.2.1",
+]
+
+[project.scripts]
+install_gptscript = "gptscript.install:install"
+
+[tool.wheel]
+universal = true
