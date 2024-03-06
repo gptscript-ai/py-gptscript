@@ -11,6 +11,9 @@ optToArg = {
 
 
 def _get_command():
+    if os.getenv("GPTSCRIPT_BIN") is not None:
+        return os.getenv("GPTSCRIPT_BIN")
+
     python_bin_dir = os.path.dirname(sys.executable)
     return os.path.join(python_bin_dir, "gptscript")
 

@@ -27,6 +27,12 @@ from gptscript.install import install
 install()
 ```
 
+If you already have the gptscript cli installed, you can use it by setting the envvar:
+
+```bash
+export GPTSCRIPT_BIN="/path/to/gptscript"
+```
+
 ## Using the Module
 
 The module requires the OPENAI_API_KEY environment variable to be set with your OPENAI key. You can set it in your shell or in your code.

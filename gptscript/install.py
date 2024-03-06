@@ -38,7 +38,7 @@ if not pltfm or not suffix:
 url = f"{gptscript_info['url']}{gptscript_info['version']}/gptscript-{gptscript_info['version']}-{pltfm}-{arch}.{suffix}"
 
 # Define output directory
-output_dir = Path(__file__).resolve().parent / "bin"
+output_dir = Path(__file__).resolve().parent / ".." / "scratch"
 gptscript_binary_name = "gptscript" if platform_name != "windows" else "gptscript.exe"
 gptscript_binary_path = output_dir / gptscript_binary_name
 
@@ -84,7 +84,7 @@ def install():
         print("gptscript is already installed")
         sys.exit(0)
 
-    if os.environ.get("NODE_GPTSCRIPT_SKIP_INSTALL_BINARY") == "true":
+    if os.environ.get("GPTSCRIPT_SKIP_INSTALL_BINARY") == "true":
         print("Skipping binary download")
         sys.exit(0)
 
@@ -116,6 +116,10 @@ def install():
     # Copy binary to Python bin directory
     print("Copying binary to Python bin directory...")
     copy_binary_to_python_bin(gptscript_binary_path, python_bin_dir)
+
+    # Remove the output directory
+    print("Removing the output directory...")
+    shutil.rmtree(output_dir)
 
     print("Download, extraction, and copying completed.")
 
