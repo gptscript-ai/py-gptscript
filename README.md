@@ -91,7 +91,7 @@ This function executes a tool and returns the response.
 
 ```python
 from gptscript.command import exec
-from gptsript.tool import Tool
+from gptscript.tool import Tool
 
 tool = Tool(
     json_response=True,
@@ -132,7 +132,7 @@ This function streams the execution of a tool and returns the output, error, and
 
 ```python
 from gptscript.command import stream_exec, complex_tool
-from gptsript.tool import Tool
+from gptscript.tool import Tool
 
 tool = Tool(
     json_response=True,
