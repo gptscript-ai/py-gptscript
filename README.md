@@ -128,7 +128,7 @@ print(response)
 
 ### `stream_exec(tool)`
 
-This function streams the execution of a tool and returns the output, error, and process wait function.
+This function streams the execution of a tool and returns the output, error, and process wait function. The streams must be read from.
 
 ```python
 from gptscript.command import stream_exec, complex_tool
@@ -151,9 +151,16 @@ the response should be in JSON and match the format:
 """,
     )
 
+def print_output(out, err):
+    # Error stream has the debug info that is useful to see
+    for line in err:
+        print(line)
+
+    for line in out:
+        print(line)
+
 out, err, wait = stream_exec(tool)
-print(out)
-print(err)
+print_output(out, err)
 wait()
 ```
 
@@ -164,9 +171,16 @@ This function streams the execution of a tool from a file and returns the output
 ```python
 from gptscript.command import stream_exec_file
 
+def print_output(out, err):
+    # Error stream has the debug info that is useful to see
+    for line in err:
+        print(line)
+
+    for line in out:
+        print(line)
+
 out, err, wait = stream_exec_file("./init.gpt")
-print(out)
-print(err)
+print_output(out, err)
 wait()
 ```
 
@@ -179,13 +193,13 @@ from gptscript.tool import FreeForm, Tool
 # Define a simple tool
 simple_tool = FreeForm(
     content="""
-What is the capitial of the United States?
+What is the capital of the United States?
 """
 )
 
 # Define a complex tool
 complex_tool = Tool(
-    tools="sys.write",
+    tools=["sys.write"],
     json_response=True,
     cache=False,
     instructions="""
