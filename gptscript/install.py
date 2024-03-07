@@ -12,12 +12,21 @@ from pathlib import Path
 
 # Define platform-specific variables
 platform_name = platform.system().lower()
-arch = platform.architecture()[0]
+
+machine = platform.machine().lower()
+if machine in ["x86_64", "amd64"]:
+    arch = "amd64"
+elif machine in ["aarch64", "arm64"]:
+    arch = "arm64"
+else:
+    # Handle other architectures or set a default/fallback
+    arch = "unknown"
+    print(f"Warning: Unhandled architecture '{machine}'. This may not be supported.")
 
 gptscript_info = {
     "name": "gptscript",
     "url": "https://github.com/gptscript-ai/gptscript/releases/download/",
-    "version": "v0.1.4",
+    "version": "v0.1.5",
 }
 
 pltfm = {"windows": "windows", "linux": "linux", "darwin": "macOS"}.get(
@@ -39,7 +48,7 @@ url = f"{gptscript_info['url']}{gptscript_info['version']}/gptscript-{gptscript_
 
 # Define output directory
 output_dir = Path(__file__).resolve().parent / ".." / "scratch"
-gptscript_binary_name = "gptscript" if platform_name != "windows" else "gptscript.exe"
+gptscript_binary_name = "gptscript" + (".exe" if platform_name == "windows" else "")
 gptscript_binary_path = output_dir / gptscript_binary_name
 
 # Define Python bin directory
@@ -74,54 +83,86 @@ def extract_tar_gz(tar_path, extract_dir):
         tar_ref.extractall(extract_dir)
 
 
-def copy_binary_to_python_bin(binary_path, python_bin_dir):
-    python_bin_path = python_bin_dir / binary_path.name
-    shutil.copy2(binary_path, python_bin_path)
+def copy_binary_to_python_bin(binary_path, target):
+    shutil.copy2(binary_path, target)
+    print(f"Binary copied to {target}")
+
+
+def symlink_versioned_binary_to_bin(versioned_binary_path, python_bin_dir):
+    symlink_name = "gptscript" + (".exe" if platform_name == "windows" else "")
+    symlink_path = python_bin_dir / symlink_name
+
+    if symlink_path.is_symlink():
+        existing_target = Path(os.readlink(symlink_path))
+        if existing_target != versioned_binary_path:
+            symlink_path.unlink()  # Remove the old symlink if it doesn't point to the correct versioned binary
+            symlink_path.symlink_to(versioned_binary_path)
+            print(f"Symlink updated to point to {versioned_binary_path}.")
+        else:
+            print("Symlink is already up to date.")
+    else:
+        # If the path exists but is not a symlink (i.e., a regular file or directory), remove it before creating a symlink
+        if symlink_path.exists():
+            symlink_path.unlink()
+        symlink_path.symlink_to(versioned_binary_path)
+        print(f"Symlink created to point to {versioned_binary_path}.")
 
 
 def install():
-    if file_exists(gptscript_binary_path):
-        print("gptscript is already installed")
-        sys.exit(0)
-
-    if os.environ.get("GPTSCRIPT_SKIP_INSTALL_BINARY") == "true":
-        print("Skipping binary download")
-        sys.exit(0)
-
-    # Create output directory if it doesn't exist
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Download the file
-    print(f"Downloading {url}...")
-    download_file(
-        url,
-        output_dir / f"gptscript-{gptscript_info['version']}-{pltfm}-{arch}.{suffix}",
+    versioned_binary_name = f"gptscript-{gptscript_info['version']}" + (
+        ".exe" if platform_name == "windows" else ""
     )
+    versioned_binary_path = python_bin_dir / versioned_binary_name
 
-    # Extract the file
-    print("Extracting...")
-    if suffix == "zip":
-        extract_zip(
+    if versioned_binary_path.exists():
+        print(f"{versioned_binary_name} is already installed.")
+    else:
+        if os.environ.get("GPTSCRIPT_SKIP_INSTALL_BINARY") == "true":
+            print("Skipping binary download")
+            sys.exit(0)
+
+        # Create output directory if it doesn't exist
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Download the file
+        print(f"Downloading {url}...")
+        download_file(
+            url,
             output_dir
             / f"gptscript-{gptscript_info['version']}-{pltfm}-{arch}.{suffix}",
-            output_dir,
-        )
-    elif suffix == "tar.gz":
-        extract_tar_gz(
-            output_dir
-            / f"gptscript-{gptscript_info['version']}-{pltfm}-{arch}.{suffix}",
-            output_dir,
         )
 
-    # Copy binary to Python bin directory
-    print("Copying binary to Python bin directory...")
-    copy_binary_to_python_bin(gptscript_binary_path, python_bin_dir)
+        # Extract the file
+        print("Extracting...")
+        if suffix == "zip":
+            extract_zip(
+                output_dir
+                / f"gptscript-{gptscript_info['version']}-{pltfm}-{arch}.{suffix}",
+                output_dir,
+            )
+        elif suffix == "tar.gz":
+            extract_tar_gz(
+                output_dir
+                / f"gptscript-{gptscript_info['version']}-{pltfm}-{arch}.{suffix}",
+                output_dir,
+            )
 
-    # Remove the output directory
-    print("Removing the output directory...")
-    shutil.rmtree(output_dir)
+        # Find the extracted binary and rename/move it to the versioned name in the python bin directory
+        extracted_binary_path = next(
+            output_dir.glob(gptscript_binary_name + "*"), None
+        )  # Adjust the glob pattern if necessary
+        if extracted_binary_path:
+            shutil.move(str(extracted_binary_path), str(versioned_binary_path))
+            print(f"Copied {extracted_binary_path} to {versioned_binary_path}")
 
-    print("Download, extraction, and copying completed.")
+        # Remove the output directory
+        print("Removing the output directory...")
+        shutil.rmtree(output_dir)
+
+    # Update the symlink to point to the new version
+    symlink_versioned_binary_to_bin(versioned_binary_path, python_bin_dir)
+
+    print("Installation or update completed.")
 
 
 if __name__ == "__main__":
