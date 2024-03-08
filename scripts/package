@@ -17,7 +17,7 @@ from tempfile import TemporaryDirectory
 gptscript_info = {
     "name": "gptscript",
     "url": "https://github.com/gptscript-ai/gptscript/releases/download/",
-    "version": "v0.1.4",
+    "version": "v0.1.5",
 }
 
 # Define platform-specific variables
@@ -40,6 +40,9 @@ def wheel_platform_tag(platform, arch):
         "arm64": "aarch64",
         "amd64": "x86_64",
     }[arch]
+
+    # cause... windows
+    py_arch = py_arch if platform != "windows" else "amd64"
 
     py_platform = {
         "linux": "manylinux2014",
