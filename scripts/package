@@ -1,0 +1,196 @@
+#!/usr/bin/env python
+import os
+import sys
+import hashlib
+import requests
+import zipfile
+import tarfile
+import shutil
+import subprocess
+
+from pathlib import Path
+from tqdm import tqdm
+from wheel.wheelfile import WheelFile
+from tempfile import TemporaryDirectory
+
+# Define the base information for the download
+gptscript_info = {
+    "name": "gptscript",
+    "url": "https://github.com/gptscript-ai/gptscript/releases/download/",
+    "version": "v0.1.4",
+}
+
+# Define platform-specific variables
+platform_names = {
+    "linux": {"name": "linux", "archs": ["arm64", "amd64"]},
+    "darwin": {"name": "macOS", "archs": ["universal"]},
+    "windows": {"name": "windows", "archs": ["amd64"]},
+}
+
+# Define suffix for different platforms
+suffixes = {
+    "linux": "tar.gz",
+    "macOS": "tar.gz",
+    "windows": "zip",
+}
+
+def wheel_platform_tag(platform, arch):
+    py_arch= {
+        "universal": "universal2",
+        "arm64": "aarch64",
+        "amd64": "x86_64",
+    }[arch]
+
+    py_platform = {
+        "linux": "manylinux2014",
+        "macOS":"macosx_10_9",
+        "windows":"win",
+    }[platform]
+
+    return f"{py_platform}_{py_arch}"
+
+
+def download_file(url, save_path):
+    response = requests.get(url, stream=True)
+    total_size = int(response.headers.get("content-length", 0))
+    block_size = 1024
+    progress_bar = tqdm(
+        total=total_size,
+        unit="B",
+        unit_scale=True,
+        desc=f"Downloading {url.split('/')[-1]}",
+    )
+
+    with open(save_path, "wb") as f:
+        for data in response.iter_content(block_size):
+            progress_bar.update(len(data))
+            f.write(data)
+
+    progress_bar.close()
+
+
+def extract_archive(archive_path, extract_dir):
+    if archive_path.suffix == ".zip":
+        with zipfile.ZipFile(archive_path, "r") as zip_ref:
+            zip_ref.extractall(extract_dir)
+    elif archive_path.suffixes[-2:] == [".tar", ".gz"]:
+        with tarfile.open(archive_path, "r:gz") as tar_ref:
+            tar_ref.extractall(extract_dir)
+
+
+def setup_directories(base_dir):
+    for platform_name in platform_names.values():
+        for arch in platform_name["archs"]:
+            os.makedirs(base_dir / platform_name["name"] / arch, exist_ok=True)
+
+
+def stage_gptscript_binaries(base_dir):
+    setup_directories(base_dir)
+
+    for platform_name in platform_names.values():
+        for arch in platform_name["archs"]:
+            pltfm_dir = platform_name["name"]
+            file_suffix = suffixes[pltfm_dir]
+
+            artifact_name = f"{gptscript_info['name']}-{gptscript_info['version']}-{pltfm_dir}-{arch}.{file_suffix}"
+            url = f"{gptscript_info['url']}{gptscript_info['version']}/{artifact_name}"
+
+            download_path = base_dir / pltfm_dir / arch / artifact_name
+            download_file(url, download_path)
+
+            # Extract the downloaded archive
+            extract_archive(download_path, base_dir / pltfm_dir / arch)
+
+            # Remove the archive file after extraction
+            download_path.unlink()
+
+
+def build_wheel_for_platform(output_dir):
+    """
+    Build a wheel for each platform specified in platform_names.
+    Assumes a setup.py file is present and correctly configured.
+    """
+    for platform in platform_names.values():
+        for arch in platform["archs"]:
+            # Set environment variables to influence the build process for specific platform and architecture
+            os.environ["PLAT"] = f"{platform["name"]}-{arch}"
+            try:
+                # Call the build module to build the project
+                subprocess.check_call(
+                    [sys.executable, "-m", "build", "--outdir", str(output_dir)]
+                )
+            finally:
+                # Cleanup environment variables
+                del os.environ["PLAT"]
+
+def file_hash_and_size(file_path):
+    """Compute the SHA256 hash and size of a file."""
+    sha256 = hashlib.sha256()
+    size = 0
+    with open(file_path, 'rb') as f:
+        while True:
+            data = f.read(8192)
+            if not data:
+                break
+            sha256.update(data)
+            size += len(data)
+    return sha256.hexdigest(), f"{size}"
+
+def modify_and_repackage_wheel(wheel_path, binary_dir, platform, arch):
+    with TemporaryDirectory() as temp_dir:
+        temp_dir_path = Path(temp_dir)
+        with WheelFile(wheel_path, "r") as original_wheel:
+            original_wheel.extractall(temp_dir_path)
+
+        # Identify the .dist-info directory
+        dist_info_dirs = list(temp_dir_path.glob('*.dist-info'))
+        if len(dist_info_dirs) != 1:
+            raise RuntimeError("Expected exactly one .dist-info directory")
+        dist_info_dir = dist_info_dirs[0]
+
+        # Perform necessary modifications here
+        # Example: Adding a binary file to the .data directory
+        binary_name = "gptscript" + (".exe" if platform == "windows" else "")
+        binary_src = binary_dir / platform / arch / binary_name
+        data_dir = temp_dir_path / dist_info_dir.name.replace('.dist-info', '.data') / 'scripts'
+        data_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(binary_src, data_dir / binary_name)
+
+        # Update the RECORD file with new files
+        record_path = dist_info_dir / "RECORD"
+        with open(record_path, "a") as record_file:
+            binary_rel_path = data_dir.relative_to(temp_dir_path) / binary_name
+            hash_digest, size = file_hash_and_size(data_dir / binary_name)
+            record_file.write(f"{binary_rel_path},{hash_digest},{size}\n")
+
+        platform_tag = "none-" + wheel_platform_tag(platform, arch)
+        new_wheel_filename = wheel_path.name.replace("none-any", platform_tag)
+        new_wheel_path = wheel_path.parent / new_wheel_filename
+
+        # Repackage the wheel, overwriting the original
+        #new_wheel_path = wheel_path  # Overwrite the original wheel or specify a new path
+        with WheelFile(new_wheel_path, "w") as new_wheel:
+            new_wheel.write_files(temp_dir_path)
+
+    print(f"Wheel modified and saved to: {new_wheel_path}")
+
+
+def main():
+    base_dir = Path(__file__).resolve().parent
+    bin_dir = base_dir.parent / "bin"
+    dist_dir = base_dir.parent / "dist"
+
+    stage_gptscript_binaries(bin_dir)
+    build_wheel_for_platform(dist_dir)
+
+    # Modify and repackage wheels
+    wheel_files = list(dist_dir.glob("*.whl"))
+    for _, data in platform_names.items():
+        for arch in data["archs"]:
+            # Find the wheel file (assuming there's only one for simplicity)
+            if wheel_files:
+                modify_and_repackage_wheel(wheel_files[0], bin_dir, data["name"], arch)
+
+
+if __name__ == "__main__":
+    main()

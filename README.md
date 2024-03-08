@@ -12,7 +12,11 @@ You can install the GPTScript Python module using pip.
 pip install gptscript
 ```
 
-You will also want to have the tool download and install the gptscript cli by running:
+On MacOS, Windows X6
+
+### SDIST and none-any wheel installations
+
+When installing from the sdist or the none-any wheel, the binary is not packaged by default. You must run the install_gptscript command to install the binary.
 
 ```bash
 install_gptscript
@@ -26,6 +30,8 @@ Or you can install the gptscript cli from your code by running:
 from gptscript.install import install
 install()
 ```
+
+### Using an existing gptscript cli
 
 If you already have the gptscript cli installed, you can use it by setting the envvar:
 
@@ -63,6 +69,17 @@ The `Tool` class represents a gptscript tool. The fields align with what you wou
 
 Aside from the list methods there are `exec` and `exec_file` methods that allow you to execute a tool and get the responses. Those functions also provide a streaming version of execution if you want to process the output streams in your code as the tool is running.
 
+### Opts
+
+You can pass the following options to the exec and exec_file functions:
+
+opts= {
+    "cache": True(default)|False,
+    "cache-dir": "",
+}
+
+Cache can be set to true or false to enable or disable caching globally or it can be set at the individual tool level. The cache-dir can be set to a directory to use for caching. If not set, the default cache directory will be used.
+
 ### `list_models()`
 
 This function lists the available GPT models.
@@ -85,7 +102,7 @@ tools = list_tools()
 print(tools)
 ```
 
-### `exec(tool)`
+### `exec(tool, opts)`
 
 This function executes a tool and returns the response.
 
@@ -115,9 +132,9 @@ response = exec(tool)
 print(response)
 ```
 
-### `exec_file(tool_path)`
+### `exec_file(tool_path, input="", opts)`
 
-This function executes a tool from a file and returns the response.
+This function executes a tool from a file and returns the response. The input values are passed to the tool as args.
 
 ```python
 from gptscript.command import exec_file
@@ -126,12 +143,12 @@ response = exec_file("./example.gpt")
 print(response)
 ```
 
-### `stream_exec(tool)`
+### `stream_exec(tool, opts)`
 
 This function streams the execution of a tool and returns the output, error, and process wait function. The streams must be read from.
 
 ```python
-from gptscript.command import stream_exec, complex_tool
+from gptscript.command import stream_exec
 from gptscript.tool import Tool
 
 tool = Tool(
@@ -164,9 +181,9 @@ print_output(out, err)
 wait()
 ```
 
-### `stream_exec_file(tool_path)`
+### `stream_exec_file(tool_path, input="",opts)`
 
-This function streams the execution of a tool from a file and returns the output, error, and process wait function.
+This function streams the execution of a tool from a file and returns the output, error, and process wait function. The input values are passed to the tool as args.
 
 ```python
 from gptscript.command import stream_exec_file
@@ -207,7 +224,7 @@ complex_tool = Tool(
     These should be descriptive and explain their point of view.
     Also come up with a made-up name, they each should be from different
     backgrounds and approach art differently.
-    the response format should be:
+    the JSON response format should be:
     {
         artists: [{
             name: "name"
