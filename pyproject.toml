@@ -4,12 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gptscript"
-version = "0.1.0"
+version = "0.2.0"
 description = "Run gptscripts from Python apps"
 readme = "README.md"
 authors = [{ name = "Bill Maxwell", email = "bill@acorn.io" }]
 license = { file = "LICENSE" }
-urls = { "Homepage" = "http://pypi.python.org/pypi/gptscript/" }
 dependencies = [
     "certifi==2024.2.2",
     "charset-normalizer==3.3.2",
@@ -18,6 +17,11 @@ dependencies = [
     "tqdm==4.66.2",
     "urllib3==2.2.1",
 ]
+
+[project.urls]
+"Homepage" = "https://github.com/gptscript-ai/py-gptscript/"
+"Issues" = "https://github.com/gptscript-ai/py-gptscript/issues"
+"Repository" = "https://github.com/gptscript-ai/py-gptscript.git"
 
 [project.scripts]
 install_gptscript = "gptscript.install:install"
