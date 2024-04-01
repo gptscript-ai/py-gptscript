@@ -17,7 +17,7 @@ from tempfile import TemporaryDirectory
 gptscript_info = {
     "name": "gptscript",
     "url": "https://github.com/gptscript-ai/gptscript/releases/download/",
-    "version": "v0.2.0",
+    "version": "v0.3.0",
 }
 
 # Define platform-specific variables

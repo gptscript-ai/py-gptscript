@@ -9,7 +9,7 @@ class Tool:
         cache=True,
         temperature=None,
         args={},
-        internal_prompt="",
+        internal_prompt=False,
         instructions="",
         json_response=False,
     ):
@@ -47,7 +47,7 @@ class Tool:
         if self.args:
             for arg, desc in self.args.items():
                 tool += f"Args: {arg}: {desc}\n"
-        if self.internal_prompt != "":
+        if self.internal_prompt:
             tool += f"Internal prompt: {self.internal_prompt}\n"
         if self.instructions != "":
             tool += self.instructions
