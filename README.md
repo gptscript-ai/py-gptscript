@@ -61,7 +61,7 @@ The `Tool` class represents a gptscript tool. The fields align with what you wou
 - `cache`: Whether to use caching for responses.
 - `temperature`: The temperature parameter for response generation.
 - `args`: Additional arguments for the tool.
-- `internal_prompt`: Internal prompt for the tool.
+- `internal_prompt`: Boolean defaults to false.
 - `instructions`: Instructions or additional information about the tool.
 - `json_response`: Whether the response should be in JSON format.(If you set this to True, you must say 'json' in the instructions as well.)
 
