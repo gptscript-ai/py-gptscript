@@ -5,7 +5,7 @@ from gptscript.exec_utils import exec_cmd, stream_exec_cmd
 from gptscript.tool import FreeForm, Tool
 
 optToArg = {
-    "cache": "--cache=",
+    "cache": "--disable-cache=",
     "cacheDir": "--cache-dir=",
 }
 
@@ -92,7 +92,10 @@ def toArgs(opts):
     args = ["--quiet=false"]
     for opt, val in opts.items():
         if optToArg.get(opt):
-            args.append(optToArg[opt] + val)
+            if opt == "cache":
+                args.append(optToArg[opt] + str(not val))
+            else:
+                args.append(optToArg[opt] + val)
     return args
 
 
