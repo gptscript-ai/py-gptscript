@@ -88,7 +88,8 @@ def test_exec_simple_tool(simple_tool):
 
 # Test execution of a complex tool
 def test_exec_complex_tool(complex_tool):
-    out, err = exec(complex_tool)
+    opts = {"cache": False}
+    out, err = exec(complex_tool, opts=opts)
     assert out is not None, "Expected some output from exec using complex_tool"
 
 
