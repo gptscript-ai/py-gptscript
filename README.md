@@ -181,6 +181,47 @@ print_output(out, err)
 wait()
 ```
 
+### `stream_exec_with_events(tool, opts)`
+
+This function streams the execution of a tool and returns the output, error, event stream, and process wait function. The streams must be read from.
+
+```python
+from gptscript.command import stream_exec_with_events
+from gptscript.tool import Tool
+
+tool = Tool(
+    json_response=True,
+    instructions="""
+Create three short graphic artist descriptions and their muses. 
+These should be descriptive and explain their point of view.
+Also come up with a made up name, they each should be from different
+backgrounds and approach art differently.
+the response should be in JSON and match the format:
+{
+   artists: [{
+      name: "name"
+      description: "description"
+   }]
+}
+""",
+    )
+
+def print_output(out, err, events):
+    for event in events:
+        print(event)
+ 
+    # Error stream has the debug info that is useful to see
+    for line in err:
+        print(line)
+
+    for line in out:
+        print(line)
+
+out, err, events, wait = stream_exec_with_events(tool)
+print_output(out, err, events)
+wait()
+```
+
 ### `stream_exec_file(tool_path, input="",opts)`
 
 This function streams the execution of a tool from a file and returns the output, error, and process wait function. The input values are passed to the tool as args.
@@ -198,6 +239,29 @@ def print_output(out, err):
 
 out, err, wait = stream_exec_file("./init.gpt")
 print_output(out, err)
+wait()
+```
+
+### `stream_exec_file_with_events(tool_path, input="",opts)`
+
+This function streams the execution of a tool from a file and returns the output, error, event stream, and process wait function. The input values are passed to the tool as args.
+
+```python
+from gptscript.command import stream_exec_file_with_events
+
+def print_output(out, err, events):
+    for event in events:
+        print(event)
+
+    # Error stream has the debug info that is useful to see
+    for line in err:
+        print(line)
+
+    for line in out:
+        print(line)
+
+out, err, events, wait = stream_exec_file_with_events("./init.gpt")
+print_output(out, err, events)
 wait()
 ```
 
