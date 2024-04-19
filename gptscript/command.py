@@ -1,7 +1,7 @@
 import os
 import sys
 
-from gptscript.exec_utils import exec_cmd, stream_exec_cmd
+from gptscript.exec_utils import exec_cmd, stream_exec_cmd, stream_exec_cmd_with_events
 from gptscript.tool import FreeForm, Tool
 
 optToArg = {
@@ -57,6 +57,18 @@ def stream_exec(tool, opts={}):
         raise e
 
 
+def stream_exec_with_events(tool, opts={}):
+    cmd = _get_command()
+    args = toArgs(opts)
+    args.append("-")
+    try:
+        tool_str = process_tools(tool)
+        process, events = stream_exec_cmd_with_events(cmd, args, input=tool_str)
+        return process.stdout, process.stderr, events, process.wait
+    except Exception as e:
+        raise e
+
+
 def exec_file(tool_path, input="", opts={}):
     cmd = _get_command()
     args = toArgs(opts)
@@ -84,6 +96,22 @@ def stream_exec_file(tool_path, input="", opts={}):
         process = stream_exec_cmd(cmd, args)
 
         return process.stdout, process.stderr, process.wait
+    except Exception as e:
+        raise e
+
+
+def stream_exec_file_with_events(tool_path, input="", opts={}):
+    cmd = _get_command()
+    args = toArgs(opts)
+
+    args.append(tool_path)
+
+    if input != "":
+        args.append(input)
+    try:
+        process, events = stream_exec_cmd_with_events(cmd, args)
+
+        return process.stdout, process.stderr, events, process.wait
     except Exception as e:
         raise e
 

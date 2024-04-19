@@ -4,9 +4,10 @@ from gptscript.command import (
     list_models,
     list_tools,
     exec,
-    exec_file,
     stream_exec,
+    stream_exec_with_events,
     stream_exec_file,
+    stream_exec_file_with_events,
 )
 from gptscript.tool import Tool, FreeForm
 
@@ -115,7 +116,39 @@ def test_stream_exec_complex_tool(complex_tool):
 def test_stream_exec_file():
     out, err, wait = stream_exec_file("./fixtures/test.gpt")
     resp = wait()  # Wait for streaming to complete
+    for line in out:
+        print(line)
+    for line in err:
+        print(line)
     assert (
         out is not None or err is not None
+    ), "Expected some output or error from stream_exec_file"
+    assert resp == 0, "Expected a successful response from stream_exec_file"
+
+
+def test_stream_exec_tool_with_events(simple_tool):
+    out, err, events, wait = stream_exec_with_events(simple_tool)
+    has_events = False
+    for line in events:
+        has_events = line != ""
+
+    assert has_events, "Expected some events from stream_exec_with_events"
+    resp = wait()  # Wait for streaming to complete
+    assert (
+            out is not None or err is not None
+    ), "Expected some output or error from stream_exec_file"
+    assert resp == 0, "Expected a successful response from stream_exec_file"
+
+
+def test_stream_exec_file_with_events():
+    out, err, events, wait = stream_exec_file_with_events("./fixtures/test.gpt")
+    has_events = False
+    for line in events:
+        has_events = line != ""
+
+    assert has_events, "Expected some events from stream_exec_file_with_events"
+    resp = wait()  # Wait for streaming to complete
+    assert (
+            out is not None or err is not None
     ), "Expected some output or error from stream_exec_file"
     assert resp == 0, "Expected a successful response from stream_exec_file"
