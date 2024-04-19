@@ -7,4 +7,6 @@ urllib3==2.2.1
 tox==4.14.1
 wheel==0.42.0
 setuptools==69.1.1
+twine==5.0.0
+build==1.1.1
 pywin32==306; sys_platform == 'win32'
