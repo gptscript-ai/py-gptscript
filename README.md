@@ -71,11 +71,13 @@ Aside from the list methods there are `exec` and `exec_file` methods that allow 
 
 ### Opts
 
-You can pass the following options to the exec and exec_file functions:
+You can pass the following options to the exec and exec_file functions. See `gptscript --help` for further information.
 
 opts= {
     "cache": True(default)|False,
-    "cache-dir": "",
+    "cache-dir": "/path/to/dir",
+    "quiet": True|False(default),
+    "chdir": "/path/to/dir",
 }
 
 Cache can be set to true or false to enable or disable caching globally or it can be set at the individual tool level. The cache-dir can be set to a directory to use for caching. If not set, the default cache directory will be used.
