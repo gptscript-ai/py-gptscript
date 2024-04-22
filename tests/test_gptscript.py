@@ -4,6 +4,7 @@ from gptscript.command import (
     list_models,
     list_tools,
     exec,
+    exec_file,
     stream_exec,
     stream_exec_with_events,
     stream_exec_file,
@@ -110,6 +111,18 @@ def test_stream_exec_complex_tool(complex_tool):
     assert (
         resp == 0
     ), "Expected a successful response from stream_exec using complex_tool"
+
+
+def test_exec_file_with_chdir():
+    # By changing the directory here, we should be able to find the test.gpt file without `./test`
+    out, err = exec_file("./test.gpt", opts={"chdir": "./fixtures"})
+    for line in out:
+        print(line)
+    for line in err:
+        print(line)
+    assert (
+            out is not None and err is not None
+    ), "Expected some output or error from stream_exec_file"
 
 
 # Test streaming execution from a file

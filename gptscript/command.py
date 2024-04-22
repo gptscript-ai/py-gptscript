@@ -4,9 +4,11 @@ import sys
 from gptscript.exec_utils import exec_cmd, stream_exec_cmd, stream_exec_cmd_with_events
 from gptscript.tool import FreeForm, Tool
 
-optToArg = {
+opt_to_arg = {
     "cache": "--disable-cache=",
     "cacheDir": "--cache-dir=",
+    "quiet": "--quiet=",
+    "chdir": "--chdir=",
 }
 
 
@@ -35,7 +37,7 @@ def list_models():
 
 def exec(tool, opts={}):
     cmd = _get_command()
-    args = toArgs(opts)
+    args = to_args(opts)
     args.append("-")
     try:
         tool_str = process_tools(tool)
@@ -47,7 +49,7 @@ def exec(tool, opts={}):
 
 def stream_exec(tool, opts={}):
     cmd = _get_command()
-    args = toArgs(opts)
+    args = to_args(opts)
     args.append("-")
     try:
         tool_str = process_tools(tool)
@@ -59,7 +61,7 @@ def stream_exec(tool, opts={}):
 
 def stream_exec_with_events(tool, opts={}):
     cmd = _get_command()
-    args = toArgs(opts)
+    args = to_args(opts)
     args.append("-")
     try:
         tool_str = process_tools(tool)
@@ -71,7 +73,7 @@ def stream_exec_with_events(tool, opts={}):
 
 def exec_file(tool_path, input="", opts={}):
     cmd = _get_command()
-    args = toArgs(opts)
+    args = to_args(opts)
 
     args.append(tool_path)
 
@@ -86,7 +88,7 @@ def exec_file(tool_path, input="", opts={}):
 
 def stream_exec_file(tool_path, input="", opts={}):
     cmd = _get_command()
-    args = toArgs(opts)
+    args = to_args(opts)
 
     args.append(tool_path)
 
@@ -102,7 +104,7 @@ def stream_exec_file(tool_path, input="", opts={}):
 
 def stream_exec_file_with_events(tool_path, input="", opts={}):
     cmd = _get_command()
-    args = toArgs(opts)
+    args = to_args(opts)
 
     args.append(tool_path)
 
@@ -116,14 +118,15 @@ def stream_exec_file_with_events(tool_path, input="", opts={}):
         raise e
 
 
-def toArgs(opts):
-    args = ["--quiet=false"]
+def to_args(opts):
+    args = []
     for opt, val in opts.items():
-        if optToArg.get(opt):
+        opt_arg = opt_to_arg.get(opt, None)
+        if opt_arg is not None:
             if opt == "cache":
-                args.append(optToArg[opt] + str(not val))
+                args.append(opt_arg + str(not val))
             else:
-                args.append(optToArg[opt] + val)
+                args.append(opt_arg + val)
     return args
 
 
@@ -147,9 +150,7 @@ def tool_concat(tools=[]):
     resp = ""
     if len(tools) == 1:
         return str(tools[0])
-    for tool in tools:
+    if tools:
         resp = "\n---\n".join([str(tool) for tool in tools])
-
-    print(resp)
 
     return resp
