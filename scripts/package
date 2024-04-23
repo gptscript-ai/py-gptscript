@@ -34,6 +34,7 @@ suffixes = {
     "windows": "zip",
 }
 
+
 def wheel_platform_tag(platform, arch):
     py_arch= {
         "universal": "universal2",
@@ -126,6 +127,7 @@ def build_wheel_for_platform(output_dir):
                 # Cleanup environment variables
                 del os.environ["PLAT"]
 
+
 def file_hash_and_size(file_path):
     """Compute the SHA256 hash and size of a file."""
     sha256 = hashlib.sha256()
@@ -138,6 +140,7 @@ def file_hash_and_size(file_path):
             sha256.update(data)
             size += len(data)
     return sha256.hexdigest(), f"{size}"
+
 
 def modify_and_repackage_wheel(wheel_path, binary_dir, platform, arch):
     with TemporaryDirectory() as temp_dir:
