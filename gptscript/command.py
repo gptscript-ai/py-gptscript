@@ -9,6 +9,7 @@ opt_to_arg = {
     "cacheDir": "--cache-dir=",
     "quiet": "--quiet=",
     "chdir": "--chdir=",
+    "subTool": "--sub-tool=",
 }
 
 
