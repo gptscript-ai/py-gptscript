@@ -57,7 +57,8 @@ the response should be in JSON and match the format:
 @pytest.fixture
 def tool_list():
     return [
-        Tool(tools=["echo"], instructions="echo hello times"),
+        Tool(tools=["echo"], instructions="echo hello there"),
+        Tool(name="other", tools=["echo"], instructions="echo hello somewhere else"),
         Tool(
             name="echo",
             tools=["sys.exec"],
@@ -104,7 +105,12 @@ def test_exec_complex_tool(complex_tool):
 # Test execution with a list of tools
 def test_exec_tool_list(tool_list):
     out, err = exec(tool_list)
-    assert out is not None, "Expected some output from exec using a list of tools"
+    assert out.strip() == "hello there", "Unexpected output from exec using a list of tools"
+
+
+def test_exec_tool_list_with_sub_tool(tool_list):
+    out, err = exec(tool_list, opts={"subTool": "other"})
+    assert out.strip() == "hello somewhere else", "Unexpected output from exec using a list of tools with sub tool"
 
 
 # Test streaming execution of a complex tool
