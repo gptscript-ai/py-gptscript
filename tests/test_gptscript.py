@@ -1,6 +1,7 @@
 import os
 import pytest
 from gptscript.command import (
+    version,
     list_models,
     list_tools,
     exec,
@@ -68,6 +69,11 @@ def tool_list():
             """,
         ),
     ]
+
+
+def test_version():
+    v = version()
+    assert "gptscript version " in v
 
 
 # Test function for listing models
