@@ -20,6 +20,12 @@ def _get_command():
     return os.path.join(python_bin_dir, "gptscript")
 
 
+def version():
+    cmd = _get_command()
+    out, _ = exec_cmd(cmd, ["--version"])
+    return out
+
+
 def list_tools():
     cmd = _get_command()
     out, _ = exec_cmd(cmd, ["--list-tools"])
