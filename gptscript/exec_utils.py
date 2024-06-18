@@ -1,5 +1,5 @@
-import subprocess
 import os
+import subprocess
 import sys
 
 if sys.platform == "win32":
@@ -19,10 +19,7 @@ def exec_cmd(cmd, args=[], input=None):
             encoding="utf-8",
         )
 
-        if input is None:
-            return process.communicate()
-        else:
-            return process.communicate(input=input)
+        return process.communicate(input=input)
     except Exception as e:
         raise e
 
@@ -48,11 +45,11 @@ def stream_exec_cmd_with_events(cmd, args=[], input=None):
         # Duplicate the handle to make it inheritable
         proc_handle = win32api.GetCurrentProcess()
         dup_handle = win32api.DuplicateHandle(
-            proc_handle,        # Source process handle
-            w_handle,           # Source handle
-            proc_handle,        # Target process handle
-            0,                  # Desired access (0 defaults to same as source)
-            1,                  # Inherit handle
+            proc_handle,  # Source process handle
+            w_handle,  # Source handle
+            proc_handle,  # Target process handle
+            0,  # Desired access (0 defaults to same as source)
+            1,  # Inherit handle
             win32con.DUPLICATE_SAME_ACCESS  # Options
         )
         args = ["--events-stream-to=fd://" + str(int(dup_handle))] + args

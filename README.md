@@ -2,7 +2,8 @@
 
 ## Introduction
 
-The GPTScript Python module is a library that provides a simple interface to create and run gptscripts within Python applications, and Jupyter notebooks. It allows you to define tools, execute them, and process the responses.
+The GPTScript Python module is a library that provides a simple interface to create and run gptscripts within Python
+applications, and Jupyter notebooks. It allows you to define tools, execute them, and process the responses.
 
 ## Installation
 
@@ -16,7 +17,8 @@ On MacOS, Windows X6
 
 ### SDIST and none-any wheel installations
 
-When installing from the sdist or the none-any wheel, the binary is not packaged by default. You must run the install_gptscript command to install the binary.
+When installing from the sdist or the none-any wheel, the binary is not packaged by default. You must run the
+install_gptscript command to install the binary.
 
 ```bash
 install_gptscript
@@ -28,6 +30,7 @@ Or you can install the gptscript cli from your code by running:
 
 ```python
 from gptscript.install import install
+
 install()
 ```
 
@@ -39,252 +42,280 @@ If you already have the gptscript cli installed, you can use it by setting the e
 export GPTSCRIPT_BIN="/path/to/gptscript"
 ```
 
-## Using the Module
+## GPTScript
 
-The module requires the OPENAI_API_KEY environment variable to be set with your OPENAI key. You can set it in your shell or in your code.
+The GPTScript instance allows the caller to run gptscript files, tools, and other operations (see below). Note that the
+intention is that a single GPTScript instance is all you need for the life of your application, you should
+call `close()` on the instance when you are done.
 
-```bash
-export OPENAI_AI_KEY="your-key"
-```
+## Global Options
+
+When creating a `GTPScript` instance, you can pass the following global options. These options are also available as
+run `Options`. Anything specified as a run option will take precedence over the global option.
+
+- `APIKey`: Specify an OpenAI API key for authenticating requests. Defaults to `OPENAI_API_KEY` environment variable
+- `BaseURL`: A base URL for an OpenAI compatible API (the default is `https://api.openai.com/v1`)
+- `DefaultModel`: The default model to use for OpenAI requests
+- `Env`: Supply the environment variables. Supplying anything here means that nothing from the environment is used. The
+  default is `os.environ()`. Supplying `Env` at the run/evaluate level will be treated as "additional."
+
+## Run Options
+
+These are optional options that can be passed to the `run` and `evaluate` functions.
+None of the options is required, and the defaults will reduce the number of calls made to the Model API.
+As noted above, the Global Options are also available to specify here. These options would take precedence.
+
+- `disableCache`: Enable or disable caching. Default (False).
+- `subTool`: Use tool of this name, not the first tool
+- `input`: Input arguments for the tool run
+- `workspace`: Directory to use for the workspace, if specified it will not be deleted on exit
+- `chatState`: The chat state to continue, or null to start a new chat and return the state
+- `confirm`: Prompt before running potentially dangerous commands
+- `prompt`: Allow prompting of the user
 
 ## Tools
 
-The `Tool` class represents a gptscript tool. The fields align with what you would be able to define in a normal gptscript .gpt file.
+The `Tool` class represents a gptscript tool. The fields align with what you would be able to define in a normal
+gptscript .gpt file.
 
 ### Fields
 
 - `name`: The name of the tool.
 - `description`: A description of the tool.
 - `tools`: Additional tools associated with the main tool.
-- `max_tokens`: The maximum number of tokens to generate.
+- `maxTokens`: The maximum number of tokens to generate.
 - `model`: The GPT model to use.
 - `cache`: Whether to use caching for responses.
 - `temperature`: The temperature parameter for response generation.
-- `args`: Additional arguments for the tool.
-- `internal_prompt`: Boolean defaults to false.
+- `arguments`: Additional arguments for the tool.
+- `internalPrompt`: Optional boolean defaults to None.
 - `instructions`: Instructions or additional information about the tool.
-- `json_response`: Whether the response should be in JSON format.(If you set this to True, you must say 'json' in the instructions as well.)
+- `jsonResponse`: Whether the response should be in JSON format.(If you set this to True, you must say 'json' in the
+  instructions as well.)
 
 ## Primary Functions
 
-Aside from the list methods there are `exec` and `exec_file` methods that allow you to execute a tool and get the responses. Those functions also provide a streaming version of execution if you want to process the output streams in your code as the tool is running.
-
-### Opts
-
-You can pass the following options to the exec and exec_file functions. See `gptscript --help` for further information.
-
-opts= {
-    "cache": True(default)|False,
-    "cache-dir": "/path/to/dir",
-    "quiet": True|False(default),
-    "chdir": "/path/to/dir",
-    "subTool": "tool-name",
-}
-
-Cache can be set to true or false to enable or disable caching globally or it can be set at the individual tool level. The cache-dir can be set to a directory to use for caching. If not set, the default cache directory will be used.
-
-### `list_models()`
-
-This function lists the available GPT models.
-
-```python
-from gptscript.command import list_models
-
-models = list_models()
-print(models)
-```
+Aside from the list methods there are `exec` and `exec_file` methods that allow you to execute a tool and get the
+responses. Those functions also provide a streaming version of execution if you want to process the output streams in
+your code as the tool is running.
 
 ### `list_tools()`
 
 This function lists the available tools.
 
 ```python
-from gptscript.command import list_tools
+from gptscript.gptscript import GPTScript
 
-tools = list_tools()
-print(tools)
+
+async def list_tools():
+    gptscript = GPTScript()
+    tools = await gptscript.list_tools()
+    print(tools)
+    gptscript.close()
 ```
 
-### `exec(tool, opts)`
+### `list_models()`
 
-This function executes a tool and returns the response.
+This function lists the available GPT models.
 
 ```python
-from gptscript.command import exec
-from gptscript.tool import Tool
-
-tool = Tool(
-    json_response=True,
-    instructions="""
-Create three short graphic artist descriptions and their muses. 
-These should be descriptive and explain their point of view.
-Also come up with a made up name, they each should be from different
-backgrounds and approach art differently.
-the response should be in JSON and match the format:
-{
-   artists: [{
-      name: "name"
-      description: "description"
-   }]
-}
-""",
-    )
+from gptscript.gptscript import GPTScript
 
 
-response = exec(tool)
-print(response)
+async def list_models():
+    gptscript = GPTScript()
+    tools = await gptscript.list_models()
+    print(tools)
+    gptscript.close()
 ```
 
-### `exec_file(tool_path, input="", opts)`
+### `parse()`
 
-This function executes a tool from a file and returns the response. The input values are passed to the tool as args.
+Parse a file into a Tool data structure.
 
 ```python
-from gptscript.command import exec_file
+from gptscript.gptscript import GPTScript
 
-response = exec_file("./example.gpt")
-print(response)
+
+async def parse_example():
+    gptscript = GPTScript()
+    tools = await gptscript.parse("/path/to/file")
+    print(tools)
+    gptscript.close()
 ```
 
-### `stream_exec(tool, opts)`
+### `parse_tool()`
 
-This function streams the execution of a tool and returns the output, error, and process wait function. The streams must be read from.
+Parse the contents that represents a GPTScript file into a Tool data structure.
 
 ```python
-from gptscript.command import stream_exec
-from gptscript.tool import Tool
+from gptscript.gptscript import GPTScript
 
-tool = Tool(
-    json_response=True,
-    instructions="""
-Create three short graphic artist descriptions and their muses. 
-These should be descriptive and explain their point of view.
-Also come up with a made up name, they each should be from different
-backgrounds and approach art differently.
-the response should be in JSON and match the format:
-{
-   artists: [{
-      name: "name"
-      description: "description"
-   }]
-}
-""",
-    )
 
-def print_output(out, err):
-    # Error stream has the debug info that is useful to see
-    for line in err:
-        print(line)
-
-    for line in out:
-        print(line)
-
-out, err, wait = stream_exec(tool)
-print_output(out, err)
-wait()
+async def parse_tool_example():
+    gptscript = GPTScript()
+    tools = await gptscript.parse_tool("Instructions: Say hello!")
+    print(tools)
+    gptscript.close()
 ```
 
-### `stream_exec_with_events(tool, opts)`
+### `fmt()`
 
-This function streams the execution of a tool and returns the output, error, event stream, and process wait function. The streams must be read from.
+Parse convert a tool data structure into a GPTScript file.
 
 ```python
-from gptscript.command import stream_exec_with_events
-from gptscript.tool import Tool
+from gptscript.gptscript import GPTScript
 
-tool = Tool(
-    json_response=True,
-    instructions="""
-Create three short graphic artist descriptions and their muses. 
-These should be descriptive and explain their point of view.
-Also come up with a made up name, they each should be from different
-backgrounds and approach art differently.
-the response should be in JSON and match the format:
-{
-   artists: [{
-      name: "name"
-      description: "description"
-   }]
-}
-""",
-    )
 
-def print_output(out, err, events):
-    for event in events:
-        print(event)
- 
-    # Error stream has the debug info that is useful to see
-    for line in err:
-        print(line)
+async def fmt_example():
+    gptscript = GPTScript()
+    tools = await gptscript.parse_tool("Instructions: Say hello!")
+    print(tools)
 
-    for line in out:
-        print(line)
-
-out, err, events, wait = stream_exec_with_events(tool)
-print_output(out, err, events)
-wait()
+    contents = gptscript.fmt(tools)
+    print(contents)  # This would print "Instructions: Say hello!"
+    gptscript.close()
 ```
 
-### `stream_exec_file(tool_path, input="",opts)`
+### `evaluate()`
 
-This function streams the execution of a tool from a file and returns the output, error, and process wait function. The input values are passed to the tool as args.
+Executes a tool with optional arguments.
 
 ```python
-from gptscript.command import stream_exec_file
+from gptscript.gptscript import GPTScript
+from gptscript.tool import ToolDef
 
-def print_output(out, err):
-    # Error stream has the debug info that is useful to see
-    for line in err:
-        print(line)
 
-    for line in out:
-        print(line)
+async def evaluate_example():
+    tool = ToolDef(instructions="Who was the president of the United States in 1928?")
+    gptscript = GPTScript()
 
-out, err, wait = stream_exec_file("./init.gpt")
-print_output(out, err)
-wait()
+    run = gptscript.evaluate(tool)
+    output = await run.text()
+
+    print(output)
+
+    gptscript.close()
 ```
 
-### `stream_exec_file_with_events(tool_path, input="",opts)`
+### `run()`
 
-This function streams the execution of a tool from a file and returns the output, error, event stream, and process wait function. The input values are passed to the tool as args.
+Executes a GPT script file with optional input and arguments. The script is relative to the callers source directory.
 
 ```python
-from gptscript.command import stream_exec_file_with_events
+from gptscript.gptscript import GPTScript
 
-def print_output(out, err, events):
-    for event in events:
-        print(event)
 
-    # Error stream has the debug info that is useful to see
-    for line in err:
-        print(line)
+async def evaluate_example():
+    gptscript = GPTScript()
 
-    for line in out:
-        print(line)
+    run = gptscript.run("/path/to/file")
+    output = await run.text()
 
-out, err, events, wait = stream_exec_file_with_events("./init.gpt")
-print_output(out, err, events)
-wait()
+    print(output)
+
+    gptscript.close()
+```
+
+### Streaming events
+
+GPTScript provides events for the various steps it takes. You can get those events and process them
+with `event_handlers`. The `evaluate` method is used here, but the same functionality exists for the `run` method.
+
+```python
+from gptscript.gptscript import GPTScript
+from gptscript.frame import RunFrame, CallFrame, PromptFrame
+from gptscript.run import Run
+
+
+async def process_event(run: Run, event: RunFrame | CallFrame | PromptFrame):
+    print(event.__dict__)
+
+
+async def evaluate_example():
+    gptscript = GPTScript()
+
+    run = gptscript.run("/path/to/file", event_handlers=[process_event])
+    output = await run.text()
+
+    print(output)
+
+    gptscript.close()
+```
+
+### Confirm
+
+Using the `confirm: true` option allows a user to inspect potentially dangerous commands before they are run. The caller
+has the ability to allow or disallow their running. In order to do this, a caller should look for the `CallConfirm`
+event.
+
+```python
+from gptscript.gptscript import GPTScript
+from gptscript.frame import RunFrame, CallFrame, PromptFrame
+from gptscript.run import Run, RunEventType
+from gptscript.confirm import AuthResponse
+
+gptscript = GPTScript()
+
+
+async def confirm(run: Run, event: RunFrame | CallFrame | PromptFrame):
+    if event.type == RunEventType.callConfirm:
+        # AuthResponse also has a "message" field to specify why the confirm was denied.
+        await gptscript.confirm(AuthResponse(accept=True))
+
+
+async def evaluate_example():
+    run = gptscript.run("/path/to/file", event_handlers=[confirm])
+    output = await run.text()
+
+    print(output)
+
+    gptscript.close()
+```
+
+### Prompt
+
+Using the `prompt: true` option allows a script to prompt a user for input. In order to do this, a caller should look
+for the `Prompt` event. Note that if a `Prompt` event occurs when it has not explicitly been allowed, then the run will
+error.
+
+```python
+from gptscript.gptscript import GPTScript
+from gptscript.frame import RunFrame, CallFrame, PromptFrame
+from gptscript.run import Run, RunEventType
+from gptscript.prompt import PromptResponse
+
+gptscript = GPTScript()
+
+
+async def prompt(run: Run, event: RunFrame | CallFrame | PromptFrame):
+    if isinstance(event, PromptFrame):
+        # The responses field here is a dictionary of prompt fields to values.
+        await gptscript.prompt(PromptResponse(id=event.id, responses={event.fields[0]: "Some value"}))
+
+
+async def evaluate_example():
+    run = gptscript.run("/path/to/file", event_handlers=[prompt])
+    output = await run.text()
+
+    print(output)
+
+    gptscript.close()
 ```
 
 ## Example Usage
 
 ```python
-from gptscript.command import exec
-from gptscript.tool import FreeForm, Tool
+from gptscript.gptscript import GPTScript
+from gptscript.tool import ToolDef
 
-# Define a simple tool
-simple_tool = FreeForm(
-    content="""
-What is the capital of the United States?
-"""
-)
+# Create the GPTScript object
+gptscript = GPTScript()
 
-# Define a complex tool
-complex_tool = Tool(
+# Define a tool
+complex_tool = ToolDef(
     tools=["sys.write"],
-    json_response=True,
+    jsonResponse=True,
     cache=False,
     instructions="""
     Create three short graphic artist descriptions and their muses.
@@ -302,27 +333,26 @@ complex_tool = Tool(
 )
 
 # Execute the complex tool
-response, err = exec(complex_tool)
-print(err)
-print(response)
+run = gptscript.evaluate(complex_tool)
+print(await run.text())
 
-# Execute the simple tool
-resp, err = exec(simple_tool)
-print(err)
-print(resp)
+gptscript.close()
 ```
 
 ### Example 2 multiple tools
 
-In this example, multiple tool are provided to the exec function. The first tool is the only one that can exclude the name field. These will be joined and passed into the gptscript as a single gpt script.
+In this example, multiple tool are provided to the exec function. The first tool is the only one that can exclude the
+name field. These will be joined and passed into the gptscript as a single gptscript.
 
 ```python
-from gptscript.command import exec
-from gptscript.tool import Tool
+from gptscript.gptscript import GPTScript
+from gptscript.tool import ToolDef
+
+gptscript = GPTScript()
 
 tools = [
-    Tool(tools=["echo"], instructions="echo hello times"),
-    Tool(
+    ToolDef(tools=["echo"], instructions="echo hello times"),
+    ToolDef(
         name="echo",
         tools=["sys.exec"],
         description="Echo's the input",
@@ -334,7 +364,9 @@ tools = [
     ),
 ]
 
-resp, err = exec(tools)
-print(err)
-print(resp)
+run = gptscript.evaluate(tools)
+
+print(await run.text())
+
+gptscript.close()
 ```
