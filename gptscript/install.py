@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import platform
+import shutil
+import sys
+import tarfile
+import zipfile
+from pathlib import Path
+
 import requests
 from tqdm import tqdm
-import zipfile
-import tarfile
-import shutil
-from pathlib import Path
 
 # Define platform-specific variables
 platform_name = platform.system().lower()
@@ -26,7 +27,7 @@ else:
 gptscript_info = {
     "name": "gptscript",
     "url": "https://github.com/gptscript-ai/gptscript/releases/download/",
-    "version": "v0.7.1",
+    "version": "v0.8.3",
 }
 
 pltfm = {"windows": "windows", "linux": "linux", "darwin": "macOS"}.get(
