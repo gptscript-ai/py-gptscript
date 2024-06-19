@@ -32,7 +32,7 @@ jobs:
         env:
           GPTSCRIPT_BIN: ../gptscriptexe
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ./scripts/test
+        run: tox
 
   test-windows:
     runs-on: windows-latest
@@ -54,4 +54,4 @@ jobs:
         env:
           GPTSCRIPT_BIN: ..\gptscript.exe
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ./scripts/test
+        run: tox

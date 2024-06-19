@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 from gptscript.command import (
     version,
     list_models,
@@ -118,16 +120,16 @@ def test_stream_exec_complex_tool(complex_tool):
     out, err, wait = stream_exec(complex_tool)
     resp = wait()  # Wait for streaming to complete
     assert (
-        out is not None or err is not None
+            out is not None or err is not None
     ), "Expected some output or error from stream_exec using complex_tool"
     assert (
-        resp == 0
+            resp == 0
     ), "Expected a successful response from stream_exec using complex_tool"
 
 
 def test_exec_file_with_chdir():
-    # By changing the directory here, we should be able to find the test.gpt file without `./test`
-    out, err = exec_file("./test.gpt", opts={"chdir": "./fixtures"})
+    # By changing the directory here, we should be able to find the test.gpt file without `./tests`
+    out, err = exec_file("./test.gpt", opts={"chdir": "./tests/fixtures"})
     for line in out:
         print(line)
     for line in err:
@@ -139,14 +141,14 @@ def test_exec_file_with_chdir():
 
 # Test streaming execution from a file
 def test_stream_exec_file():
-    out, err, wait = stream_exec_file("./fixtures/test.gpt")
+    out, err, wait = stream_exec_file("./tests/fixtures/test.gpt")
     resp = wait()  # Wait for streaming to complete
     for line in out:
         print(line)
     for line in err:
         print(line)
     assert (
-        out is not None or err is not None
+            out is not None or err is not None
     ), "Expected some output or error from stream_exec_file"
     assert resp == 0, "Expected a successful response from stream_exec_file"
 
@@ -166,7 +168,7 @@ def test_stream_exec_tool_with_events(simple_tool):
 
 
 def test_stream_exec_file_with_events():
-    out, err, events, wait = stream_exec_file_with_events("./fixtures/test.gpt")
+    out, err, events, wait = stream_exec_file_with_events("./tests/fixtures/test.gpt")
     has_events = False
     for line in events:
         has_events = line != ""
