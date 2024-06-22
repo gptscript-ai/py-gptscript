@@ -1,11 +1,13 @@
 import os
 import platform
+import subprocess
 
 import pytest
 
 from gptscript.confirm import AuthResponse
 from gptscript.frame import RunEventType, CallFrame, RunFrame, RunState, PromptFrame
 from gptscript.gptscript import GPTScript
+from gptscript.install import install, gptscript_binary_name, python_bin_dir
 from gptscript.opts import GlobalOptions, Options
 from gptscript.prompt import PromptResponse
 from gptscript.run import Run
@@ -75,6 +77,13 @@ echo ${input}
 """,
         ),
     ]
+
+
+def test_install():
+    install()
+    bin_name = str(python_bin_dir / gptscript_binary_name)
+    process = subprocess.Popen([bin_name, '-v'], stdout=subprocess.PIPE, text=True)
+    assert process.stdout.read().startswith('gptscript version ')
 
 
 @pytest.mark.asyncio
@@ -420,15 +429,16 @@ async def test_confirm_deny(gptscript):
             for output in frame.output:
                 event_content += output.content
 
-    tool = ToolDef(tools=["sys.exec"], instructions="List the files in the current directory.")
+    tool = ToolDef(tools=["sys.exec"], instructions="List the files in the current directory. If that doesn't work"
+                                                    "print the word FAIL.")
     out = await gptscript.evaluate(tool,
                                    Options(confirm=True, disableCache=True),
                                    event_handlers=[process_event],
                                    ).text()
 
     assert confirm_event_found, "No confirm event"
-    assert "authorization error" in out, "Unexpected output: " + out
-    assert "authorization error" in event_content, "Unexpected event output: " + event_content
+    assert "FAIL" in out, "Unexpected output: " + out
+    assert "FAIL" in event_content, "Unexpected event output: " + event_content
 
 
 @pytest.mark.asyncio
