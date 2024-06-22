@@ -150,7 +150,7 @@ def install():
 
         # Find the extracted binary and rename/move it to the versioned name in the python bin directory
         extracted_binary_path = next(
-            output_dir.glob(gptscript_binary_name + "*"), None
+            output_dir.glob(gptscript_binary_name), None
         )  # Adjust the glob pattern if necessary
         if extracted_binary_path:
             shutil.move(str(extracted_binary_path), str(versioned_binary_path))
