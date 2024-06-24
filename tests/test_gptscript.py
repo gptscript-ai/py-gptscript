@@ -394,7 +394,7 @@ async def test_confirm(gptscript):
             for output in frame.output:
                 event_content += output.content
 
-    tool = ToolDef(tools=["sys.exec"], instructions="List the files in the current directory.")
+    tool = ToolDef(tools=["sys.exec"], instructions="List the files in the current directory as '.'.")
     out = await gptscript.evaluate(tool,
                                    Options(confirm=True, disableCache=True),
                                    event_handlers=[process_event],
@@ -430,8 +430,9 @@ async def test_confirm_deny(gptscript):
             for output in frame.output:
                 event_content += output.content
 
-    tool = ToolDef(tools=["sys.exec"], instructions="List the files in the current directory. If that doesn't work"
-                                                    "print the word FAIL.")
+    tool = ToolDef(tools=["sys.exec"],
+                   instructions="List the files in the current directory as '.'. If that doesn't work"
+                                "print the word FAIL.")
     out = await gptscript.evaluate(tool,
                                    Options(confirm=True, disableCache=True),
                                    event_handlers=[process_event],
