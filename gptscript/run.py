@@ -33,6 +33,7 @@ class Run:
         self._rawOutput: Any = None
         self._task: Awaitable | None = None
         self._resp: httpx.Response | None = None
+        self._event_tasks: list[Awaitable[None]] = []
 
     def program(self):
         return self._program
@@ -157,7 +158,7 @@ class Run:
                                 self._parentCallID = event.id
                         if self.event_handlers is not None:
                             for event_handler in self.event_handlers:
-                                asyncio.create_task(event_handler(self, event))
+                                self._event_tasks.append(asyncio.create_task(event_handler(self, event)))
 
         self._resp = None
         if self._err != "":
@@ -166,6 +167,14 @@ class Run:
             self._state = RunState.Finished
         else:
             self._state = RunState.Continue
+
+        for task in self._event_tasks:
+            try:
+                await task
+            except Exception as e:
+                print(f"error during event processing: {e}")
+
+        self._event_tasks = []
 
     async def aclose(self):
         if self._task is None or self._resp is None:

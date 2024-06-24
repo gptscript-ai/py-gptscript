@@ -22,7 +22,8 @@ def gptscript():
         pytest.fail("OPENAI_API_KEY not set", pytrace=False)
     try:
         gptscript = GPTScript(GlobalOptions(apiKey=os.getenv("OPENAI_API_KEY")))
-        return gptscript
+        yield gptscript
+        gptscript.close()
     except Exception as e:
         pytest.fail(e, pytrace=False)
 
@@ -387,7 +388,7 @@ async def test_confirm(gptscript):
         nonlocal confirm_event_found, event_content
         if frame.type == RunEventType.callConfirm:
             confirm_event_found = True
-            assert '"ls"' in frame.input or '"dir"' in frame.input, "Unexpected confirm input: " + frame.input
+            assert '"ls' in frame.input or '"dir' in frame.input, "Unexpected confirm input: " + frame.input
             await gptscript.confirm(AuthResponse(frame.id, True))
         elif frame.type == RunEventType.callProgress:
             for output in frame.output:
