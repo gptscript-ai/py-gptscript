@@ -14,9 +14,9 @@ jobs:
         run: |
           TAG=${{ github.event.client_payload.tag }}
           VERSION="${TAG#v}"
-          sed -i 's/version = "[0-9.]*"/version = "'${VERSION}'"/' pyproject.toml
-          sed -i 's/"version": "v[0-9.]*"/"version": "'${TAG}'"/' gptscript/install.py
-          sed -i 's/"version": "v[0-9.]*"/"version": "'${TAG}'"/' scripts/package
+          sed -i 's/version = ".*"/version = "'${VERSION}'"/' pyproject.toml
+          sed -i 's/"version": "v.*"/"version": "'${TAG}'"/' gptscript/install.py
+          sed -i 's/"version": "v.*"/"version": "'${TAG}'"/' scripts/package
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
