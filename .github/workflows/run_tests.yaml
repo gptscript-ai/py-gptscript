@@ -25,6 +25,7 @@ jobs:
         run: |
           curl https://get.gptscript.ai/releases/default_linux_amd64_v1/gptscript -o gptscriptexe
           chmod +x ./gptscriptexe
+          ./gptscriptexe --version
       - name: Install deps
         run: |
           pip install -r requirements.txt
@@ -47,6 +48,7 @@ jobs:
       - name: Install gptscript
         run: |
           curl https://get.gptscript.ai/releases/default_windows_amd64_v1/gptscript.exe -o gptscript.exe
+          .\gptscript.exe --version
       - name: Install deps
         run: |
           pip install -r requirements.txt
