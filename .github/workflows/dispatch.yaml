@@ -13,7 +13,7 @@ jobs:
       - name: Update GPTScript Version
         run: |
           TAG=${{ github.event.client_payload.tag }}
-          echo "${TAG#v}" >> $VERSION
+          VERSION="${TAG#v}"
           sed -i 's/version = "[0-9.]*"/version = "'${VERSION}'"/' pyproject.toml
           sed -i 's/"version": "v[0-9.]*"/"version": "'${TAG}'"/' gptscript/install.py
           sed -i 's/"version": "v[0-9.]*"/"version": "'${TAG}'"/' scripts/package
@@ -27,13 +27,6 @@ jobs:
         with:
           commit_message: Automated GPTScript Version Update
           file_pattern: 'pyproject.toml gptscript/install.py scripts/package'
-  tag-release:
-    needs: update-gptscript-dep
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.BOT_GH_TOKEN }}
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -47,3 +40,4 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
+          prerelease: ${{ contains(github.ref_name, '-rc') }}
