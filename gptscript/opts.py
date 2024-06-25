@@ -18,7 +18,7 @@ class GlobalOptions:
         if self.BaseURL != "":
             self.Env["OPENAI_BASE_URL"] = self.BaseURL
         if self.DefaultModel != "":
-            self.Env["GPTSCRIPT_DEFAULT_MODEL"] = self.DefaultModel
+            self.Env["GPTSCRIPT_SDKSERVER_DEFAULT_MODEL"] = self.DefaultModel
 
 
 class Options(GlobalOptions):
