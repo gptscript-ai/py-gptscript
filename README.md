@@ -282,7 +282,8 @@ error.
 ```python
 from gptscript.gptscript import GPTScript
 from gptscript.frame import RunFrame, CallFrame, PromptFrame
-from gptscript.run import Run, RunEventType
+from gptscript.run import Run
+from gptscript.opts import Options
 from gptscript.prompt import PromptResponse
 
 gptscript = GPTScript()
@@ -295,7 +296,7 @@ async def prompt(run: Run, event: RunFrame | CallFrame | PromptFrame):
 
 
 async def evaluate_example():
-    run = gptscript.run("/path/to/file", event_handlers=[prompt])
+    run = gptscript.run("/path/to/file", opts=Options(prompt=True), event_handlers=[prompt])
     output = await run.text()
 
     print(output)
