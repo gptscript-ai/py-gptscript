@@ -25,9 +25,6 @@ dependencies = [
 "Issues" = "https://github.com/gptscript-ai/py-gptscript/issues"
 "Repository" = "https://github.com/gptscript-ai/py-gptscript.git"
 
-[project.scripts]
-install_gptscript = "gptscript.install:install"
-
 [tool.wheel]
 
 [tool.setuptools]

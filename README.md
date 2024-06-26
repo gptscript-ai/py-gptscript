@@ -15,28 +15,10 @@ pip install gptscript
 
 On MacOS, Windows X6
 
-### SDIST and none-any wheel installations
-
-When installing from the sdist or the none-any wheel, the binary is not packaged by default. You must run the
-install_gptscript command to install the binary.
-
-```bash
-install_gptscript
-```
-
-The script is added to the same bin directory as the python executable, so it should be in your path.
-
-Or you can install the gptscript cli from your code by running:
-
-```python
-from gptscript.install import install
-
-install()
-```
-
 ### Using an existing gptscript cli
 
-If you already have the gptscript cli installed, you can use it by setting the envvar:
+If you already have the gptscript cli installed, then, by default, `py-gptscript` will use it if it is on your `PATH`.
+Otherwise, you can use it by setting the envvar:
 
 ```bash
 export GPTSCRIPT_BIN="/path/to/gptscript"

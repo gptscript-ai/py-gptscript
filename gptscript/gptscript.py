@@ -1,9 +1,8 @@
 import json
-import platform
 import os
+import platform
 from socket import socket
 from subprocess import Popen, PIPE
-from sys import executable
 from time import sleep
 from typing import Any, Callable, Awaitable
 
@@ -145,8 +144,4 @@ def _get_command():
     if os.getenv("GPTSCRIPT_BIN") is not None:
         return os.getenv("GPTSCRIPT_BIN")
 
-    bin_path = os.path.join(os.path.dirname(executable), "gptscript")
-    if platform.system() == "Windows":
-        bin_path += ".exe"
-
-    return bin_path if os.path.exists(bin_path) else "gptscript"
+    return "gptscript" + (".exe" if platform.system() == "Windows" else "")
