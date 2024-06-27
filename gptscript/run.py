@@ -51,10 +51,12 @@ class Run:
         try:
             if self._task is not None:
                 await self._task
-        except Exception:
+        except Exception as e:
             self._state = RunState.Error
             if self._aborted:
                 self._err = "Run was aborted"
+            else:
+                self._err = str(e)
         finally:
             self._task = None
 

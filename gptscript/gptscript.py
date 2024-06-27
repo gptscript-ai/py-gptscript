@@ -70,7 +70,7 @@ class GPTScript:
 
     def close(self):
         GPTScript.__gptscript_count -= 1
-        if GPTScript.__gptscript_count == 0:
+        if GPTScript.__gptscript_count == 0 and GPTScript.__process is not None:
             GPTScript.__process.stdin.close()
             GPTScript.__process.wait()
             GPTScript.__server_ready = False

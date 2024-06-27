@@ -115,6 +115,7 @@ class CallFrame:
                  id: str = "",
                  tool: Tool = None,
                  agentGroup: list[ToolReference] = None,
+                 currentAgent: ToolReference = None,
                  displayText: str = "",
                  inputContext: list[InputContext] = None,
                  toolCategory: str = "",
@@ -137,6 +138,9 @@ class CallFrame:
             for i in range(len(self.agentGroup)):
                 if isinstance(self.agentGroup[i], dict):
                     self.agentGroup[i] = ToolReference(**self.agentGroup[i])
+        self.currentAgent = currentAgent
+        if self.currentAgent is not None and isinstance(self.currentAgent, dict):
+            self.currentAgent = ToolReference(**self.currentAgent)
         self.displayText = displayText
         self.inputContext = inputContext
         if self.inputContext is not None:
