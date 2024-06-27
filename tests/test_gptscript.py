@@ -183,6 +183,16 @@ async def test_stream_run_file(gptscript):
     assert "Ronald Reagan" in await run.text(), "Expect streaming file to have correct output"
     assert "Ronald Reagan" in stream_output, "Expect stream_output to have correct output when streaming from file"
 
+@pytest.mark.asyncio
+async def test_credential_override(gptscript):
+    run = gptscript.run(
+        "./tests/fixtures/credential-override.gpt", 
+        Options(
+            disableCache=True,
+            credentialOverride='test.ts.credential_override:TEST_CRED=foo'
+        ),
+    )
+    assert "foo" in await run.text(), "Expect credential override to have correct output"
 
 @pytest.mark.asyncio
 async def test_eval_with_context(gptscript):
