@@ -18,6 +18,15 @@ class RunEventType(Enum):
     prompt = "prompt"
 
 
+class ToolCategory(Enum):
+    provider = "provider",
+    credential = "credential",
+    context = "context",
+    input = "input",
+    output = "output",
+    none = ""
+
+
 class RunState(Enum):
     Creating = "creating",
     Running = "running",
@@ -118,7 +127,7 @@ class CallFrame:
                  currentAgent: ToolReference = None,
                  displayText: str = "",
                  inputContext: list[InputContext] = None,
-                 toolCategory: str = "",
+                 toolCategory: ToolCategory = ToolCategory.none,
                  toolName: str = "",
                  parentID: str = "",
                  type: RunEventType = RunEventType.event,
@@ -148,6 +157,8 @@ class CallFrame:
                 if isinstance(self.inputContext[i], dict):
                     self.inputContext[i] = InputContext(**self.inputContext[i])
         self.toolCategory = toolCategory
+        if isinstance(self.toolCategory, str):
+            self.toolCategory = ToolCategory.none if self.toolCategory == "" else ToolCategory[self.toolCategory]
         self.toolName = toolName
         self.parentID = parentID
         self.type = type
