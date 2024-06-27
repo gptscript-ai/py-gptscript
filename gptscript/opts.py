@@ -30,6 +30,7 @@ class Options(GlobalOptions):
                  chatState: str = "",
                  confirm: bool = False,
                  prompt: bool = False,
+                 credentialOverride: str = "",
                  env: list[str] = None,
                  apiKey: str = "",
                  baseURL: str = "",
@@ -43,4 +44,5 @@ class Options(GlobalOptions):
         self.chatState = chatState
         self.confirm = confirm
         self.prompt = prompt
+        self.credentialOverride = credentialOverride
         self.env = env
