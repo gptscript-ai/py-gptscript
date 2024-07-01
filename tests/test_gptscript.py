@@ -186,10 +186,10 @@ async def test_stream_run_file(gptscript):
 @pytest.mark.asyncio
 async def test_credential_override(gptscript):
     run = gptscript.run(
-        "./tests/fixtures/credential-override.gpt", 
+        os.getcwd() + "/tests/fixtures/credential-override.gpt",
         Options(
             disableCache=True,
-            credentialOverride='test.ts.credential_override:TEST_CRED=foo'
+            credentialOverrides=['test.ts.credential_override:TEST_CRED=foo']
         ),
     )
     assert "foo" in await run.text(), "Expect credential override to have correct output"
