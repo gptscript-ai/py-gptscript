@@ -31,6 +31,7 @@ class Options(GlobalOptions):
                  confirm: bool = False,
                  prompt: bool = False,
                  credentialOverrides: list[str] = None,
+                 location: str = "",
                  env: list[str] = None,
                  apiKey: str = "",
                  baseURL: str = "",
@@ -45,4 +46,5 @@ class Options(GlobalOptions):
         self.confirm = confirm
         self.prompt = prompt
         self.credentialOverrides = credentialOverrides
+        self.location = location
         self.env = env
