@@ -30,14 +30,9 @@ class GPTScript:
         GPTScript.__gptscript_count += 1
 
         if GPTScript.__server_url == "":
-            GPTScript.__server_url = os.environ.get("GPTSCRIPT_URL", "")
+            GPTScript.__server_url = os.environ.get("GPTSCRIPT_URL", "127.0.0.1:0")
 
         if GPTScript.__gptscript_count == 1 and os.environ.get("GPTSCRIPT_DISABLE_SERVER", "") != "true":
-            if GPTScript.__server_url == "":
-                with socket() as s:
-                    s.bind(("", 0))
-                    GPTScript.__server_url = f"127.0.0.1:{s.getsockname()[1]}"
-
             opts.toEnv()
 
             GPTScript.__process = Popen(
@@ -49,6 +44,10 @@ class GPTScript:
                 text=True,
                 encoding="utf-8",
             )
+
+            GPTScript.__server_url = GPTScript.__process.stderr.readline().strip("\n")
+            if "=" in GPTScript.__server_url:
+                GPTScript.__server_url = GPTScript.__server_url.split("=")[1]
 
         self._server_url = f"http://{GPTScript.__server_url}"
         self._wait_for_gptscript()
