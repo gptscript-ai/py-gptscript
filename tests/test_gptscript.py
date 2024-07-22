@@ -62,7 +62,7 @@ the response should be in JSON and match the format:
 @pytest.fixture
 def tool_list():
     shebang = "#!/bin/bash"
-    if platform.system() == "windows":
+    if platform.system().lower() == "windows":
         shebang = "#!/usr/bin/env powershell.exe"
     return [
         ToolDef(tools=["echo"], instructions="echo 'hello there'"),
@@ -185,8 +185,11 @@ async def test_stream_run_file(gptscript):
 
 @pytest.mark.asyncio
 async def test_credential_override(gptscript):
+    gptscriptFile = "credential-override.gpt"
+    if platform.system().lower() == "windows":
+        gptscriptFile = "credential-override-windows.gpt"
     run = gptscript.run(
-        os.getcwd() + "/tests/fixtures/credential-override.gpt",
+        f"{os.getcwd()}{os.sep}tests{os.sep}fixtures{os.sep}{gptscriptFile}",
         Options(
             disableCache=True,
             credentialOverrides=['test.ts.credential_override:TEST_CRED=foo']
