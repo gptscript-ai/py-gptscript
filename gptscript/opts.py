@@ -33,6 +33,7 @@ class Options(GlobalOptions):
                  credentialOverrides: list[str] = None,
                  location: str = "",
                  env: list[str] = None,
+                 forceSequential: bool = False,
                  apiKey: str = "",
                  baseURL: str = "",
                  defaultModel: str = ""
@@ -48,3 +49,4 @@ class Options(GlobalOptions):
         self.credentialOverrides = credentialOverrides
         self.location = location
         self.env = env
+        self.forceSequential = forceSequential
