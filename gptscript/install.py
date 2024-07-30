@@ -27,7 +27,7 @@ else:
 gptscript_info = {
     "name": "gptscript",
     "url": "https://github.com/gptscript-ai/gptscript/releases/download/",
-    "version": "v0.9.2",
+    "version": "v0.9.3",
 }
 
 pltfm = {"windows": "windows", "linux": "linux", "darwin": "macOS"}.get(
