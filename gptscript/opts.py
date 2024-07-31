@@ -3,10 +3,13 @@ from typing import Mapping
 
 
 class GlobalOptions:
-    def __init__(self, apiKey: str = "", baseURL: str = "", defaultModel: str = "", env: Mapping[str, str] = None):
+    def __init__(self,
+                 apiKey: str = "", baseURL: str = "", defaultModelProvider: str = "", defaultModel: str = "",
+                 env: Mapping[str, str] = None):
         self.APIKey = apiKey
         self.BaseURL = baseURL
         self.DefaultModel = defaultModel
+        self.DefaultModelProvider = defaultModelProvider
         self.Env = env
 
     def toEnv(self):
@@ -19,6 +22,8 @@ class GlobalOptions:
             self.Env["OPENAI_BASE_URL"] = self.BaseURL
         if self.DefaultModel != "":
             self.Env["GPTSCRIPT_SDKSERVER_DEFAULT_MODEL"] = self.DefaultModel
+        if self.DefaultModelProvider != "":
+            self.Env["GPTSCRIPT_SDKSERVER_DEFAULT_MODEL_PROVIDER"] = self.DefaultModelProvider
 
 
 class Options(GlobalOptions):
@@ -36,9 +41,10 @@ class Options(GlobalOptions):
                  forceSequential: bool = False,
                  apiKey: str = "",
                  baseURL: str = "",
+                 defaultModelProvider: str = "",
                  defaultModel: str = ""
                  ):
-        super().__init__(apiKey, baseURL, defaultModel)
+        super().__init__(apiKey, baseURL, defaultModelProvider, defaultModel)
         self.input = input
         self.disableCache = disableCache
         self.subTool = subTool
