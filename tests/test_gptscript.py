@@ -1,3 +1,6 @@
+import base64
+import gzip
+import json
 import os
 import platform
 import subprocess
@@ -13,6 +16,7 @@ from gptscript.prompt import PromptResponse
 from gptscript.run import Run
 from gptscript.text import Text
 from gptscript.tool import ToolDef, ArgumentSchema, Property, Tool
+from gptscript.exec_utils import get_env
 
 
 # Ensure the OPENAI_API_KEY is set for testing
@@ -512,3 +516,10 @@ async def test_prompt_without_prompt_allowed(gptscript):
 
     assert not prompt_event_found, "Prompt event occurred"
     assert "prompt event occurred" in out, "Unexpected output: " + out
+
+
+def test_get_env():
+    os.environ['TEST_ENV'] = json.dumps({
+        '_gz': base64.b64encode(gzip.compress(b'test value')).decode('utf-8'),
+    }).replace(' ', '')
+    assert 'test value' == get_env('TEST_ENV')
