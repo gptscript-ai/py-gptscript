@@ -1,6 +1,9 @@
+import json
 import os
 import subprocess
 import sys
+import base64
+import gzip
 
 if sys.platform == "win32":
     import msvcrt
@@ -84,3 +87,15 @@ def _stream_cmd(cmd, args=[], input=None, fds=tuple(), close_fds=True):
         return process
     except Exception as e:
         raise e
+
+
+def get_env(key, default=''):
+    v = os.environ.get(key, '')
+    if v == '':
+        return default
+    if v.startswith('{"_gz":"') and v.endswith('"}'):
+        try:
+            return gzip.decompress(base64.b64decode(v[8:-2])).decode('utf-8')
+        except Exception as e:
+            pass
+    return v
