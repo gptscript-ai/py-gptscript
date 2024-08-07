@@ -1,7 +1,6 @@
 import json
-import platform
 import os
-from socket import socket
+import platform
 from subprocess import Popen, PIPE
 from sys import executable
 from time import sleep
@@ -95,8 +94,8 @@ class GPTScript:
             "" if opts is None else opts.input
         )
 
-    async def parse(self, file_path: str) -> list[Text | Tool]:
-        out = await self._run_basic_command("parse", {"file": file_path})
+    async def parse(self, file_path: str, disable_cache: bool = False) -> list[Text | Tool]:
+        out = await self._run_basic_command("parse", {"file": file_path, "disableCache": disable_cache})
         parsed_nodes = json.loads(out)
         return [Text(**node["textNode"]) if "textNode" in node else Tool(**node.get("toolNode", {}).get("tool", {})) for
                 node in parsed_nodes.get("nodes", [])]
