@@ -351,8 +351,8 @@ async def test_tool_chat(gptscript):
 async def test_file_chat(gptscript):
     inputs = [
         "List the 3 largest of the Great Lakes by volume.",
-        "What is the volume of the second one in cubic miles?",
-        "What is the total area of the third one in square miles?",
+        "What is the volume of the second in the list in cubic miles?",
+        "What is the total area of the third in the list in square miles?",
     ]
     expected_outputs = [
         "Lake Superior",
@@ -540,6 +540,14 @@ def test_get_env():
 
 
 @pytest.mark.asyncio
-async def test_stream_run_file(gptscript):
+async def test_run_file_with_metadata(gptscript):
     run = gptscript.run("./tests/fixtures/parse-with-metadata.gpt")
+    assert "200" == await run.text(), "Expect file to have correct output"
+
+
+@pytest.mark.asyncio
+async def test_parse_with_metadata_then_run(gptscript):
+    cwd = os.getcwd().removesuffix("tests")
+    tools = await gptscript.parse(cwd + "/tests/fixtures/parse-with-metadata.gpt")
+    run = gptscript.evaluate(tools[0])
     assert "200" == await run.text(), "Expect file to have correct output"

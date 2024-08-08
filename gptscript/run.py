@@ -85,12 +85,24 @@ class Run:
         run.opts.input = input
         if isinstance(run.tools, list):
             run._task = asyncio.create_task(
-                run._request({"toolDefs": [tool.to_json() for tool in run.tools], **vars(run.opts)}))
+                run._request({
+                    "toolDefs": [
+                        tool.to_json().get("toolNode", {}).get("tool", {}) if isinstance(tool, Tool) else tool.to_json()
+                        for tool in run.tools
+                    ], **vars(run.opts)
+                })
+            )
         elif isinstance(run.tools, str) and run.tools != "":
             run._task = asyncio.create_task(run._request({"file": run.tools, **vars(run.opts)}))
         elif isinstance(run.tools, ToolDef) or isinstance(run.tools, Tool):
             # In this last case, this.tools is a single ToolDef.
-            run._task = asyncio.create_task(run._request({"toolDefs": [run.tools.to_json()], **vars(run.opts)}))
+            run._task = asyncio.create_task(run._request({
+                "toolDefs": [
+                    run.tools.to_json().get("toolNode", {}).get("tool", {})
+                    if isinstance(run.tools, Tool) else run.tools.to_json()
+                ],
+                **vars(run.opts)
+            }))
         else:
             run._task = asyncio.create_task(run._request({**vars(run.opts)}))
 
