@@ -8,6 +8,7 @@ import subprocess
 import pytest
 
 from gptscript.confirm import AuthResponse
+from gptscript.exec_utils import get_env
 from gptscript.frame import RunEventType, CallFrame, RunFrame, RunState, PromptFrame
 from gptscript.gptscript import GPTScript
 from gptscript.install import install, gptscript_binary_name, python_bin_dir
@@ -16,7 +17,6 @@ from gptscript.prompt import PromptResponse
 from gptscript.run import Run
 from gptscript.text import Text
 from gptscript.tool import ToolDef, ArgumentSchema, Property, Tool
-from gptscript.exec_utils import get_env
 
 
 # Ensure the OPENAI_API_KEY is set for testing
@@ -224,6 +224,18 @@ async def test_parse_simple_file(gptscript):
     assert isinstance(tools[0], Tool), "Unexpected node type from parsing simple file"
     assert tools[0].instructions == "Who was the president of the United States in 1986?", \
         "Unexpected output from parsing simple file"
+
+
+@pytest.mark.asyncio
+async def test_parse_tool_with_metadata(gptscript):
+    wd = os.getcwd()
+    tools = await gptscript.parse(wd + "/tests/fixtures/parse-with-metadata.gpt")
+    assert len(tools) == 2, "Unexpected number of tools for parsing simple file"
+    assert isinstance(tools[0], Tool), "Unexpected node type from parsing file with metadata"
+    assert "requests.get(" in tools[0].instructions, "Unexpected output from parsing file with metadata"
+    assert isinstance(tools[1], Text), "Unexpected node type from parsing file with metadata"
+    assert tools[1].text == "requests", "Unexpected output from parsing file with metadata"
+    assert tools[1].format == "metadata:foo:requirements.txt", "Unexpected output from parsing file with metadata"
 
 
 @pytest.mark.asyncio
@@ -525,3 +537,9 @@ def test_get_env():
         '_gz': base64.b64encode(gzip.compress(b'test value')).decode('utf-8'),
     }).replace(' ', '')
     assert 'test value' == get_env('TEST_ENV')
+
+
+@pytest.mark.asyncio
+async def test_stream_run_file(gptscript):
+    run = gptscript.run("./tests/fixtures/parse-with-metadata.gpt")
+    assert "200" == await run.text(), "Expect file to have correct output"

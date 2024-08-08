@@ -59,6 +59,7 @@ class ToolDef:
                  agents: list[str] = None,
                  credentials: list[str] = None,
                  instructions: str = "",
+                 type: str = "",
                  ):
         self.name = name
         self.description = description
@@ -83,6 +84,7 @@ class ToolDef:
         self.agents = agents
         self.credentials = credentials
         self.instructions = instructions
+        self.type = type
 
     def to_json(self) -> dict[str, Any]:
         out = self.__dict__
@@ -161,14 +163,16 @@ class Tool(ToolDef):
                  agents: list[str] = None,
                  credentials: list[str] = None,
                  instructions: str = "",
+                 type: str = "",
                  toolMapping: dict[str, list[ToolReference]] = None,
+                 metaData: dict[str, str] = None,
                  localTools: dict[str, str] = None,
                  source: SourceRef = None,
                  workingDir: str = "",
                  ):
         super().__init__(name, description, maxTokens, modelName, modelProvider, jsonResponse, temperature, cache, chat,
                          internalPrompt, arguments, tools, globalTools, globalModelName, context, exportContext, export,
-                         agents, credentials, instructions)
+                         agents, credentials, instructions, type)
 
         self.id = id
         self.toolMapping = toolMapping
@@ -179,6 +183,7 @@ class Tool(ToolDef):
                         if isinstance(self.toolMapping[tool][i], dict):
                             self.toolMapping[tool][i] = ToolReference(**self.toolMapping[tool][i])
         self.localTools = localTools
+        self.metaData = metaData
         self.source = source
         if self.source is not None and isinstance(self.source, dict):
             self.source = SourceRef(**self.source)
