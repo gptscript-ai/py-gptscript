@@ -119,14 +119,47 @@ async def test_list_tools(gptscript):
 
 @pytest.mark.asyncio
 async def test_abort_run(gptscript):
-    async def about_run(run: Run, e: CallFrame | RunFrame | PromptFrame):
+    async def abort_run(run: Run, e: CallFrame | RunFrame | PromptFrame):
         await run.aclose()
 
     run = gptscript.evaluate(ToolDef(instructions="What is the capital of the united states?"),
-                             Options(disableCache=True), event_handlers=[about_run])
+                             Options(disableCache=True), event_handlers=[abort_run])
 
     assert "Run was aborted" in await run.text(), "Unexpected output from abort_run"
     assert RunState.Error == run.state(), "Unexpected run state after aborting"
+
+
+@pytest.mark.asyncio
+async def test_restart_failed_run(gptscript):
+    shebang = "#!/bin/bash"
+    instructions = f"""{shebang}
+exit ${{EXIT_CODE}}
+"""
+    if platform.system().lower() == "windows":
+        shebang = "#!/usr/bin/env powershell.exe"
+        instructions = f"""{shebang}
+exit $env:EXIT_CODE
+"""
+    tools = [
+        ToolDef(tools=["my-context"]),
+        ToolDef(
+            name="my-context",
+            type="context",
+            instructions=instructions,
+        ),
+    ]
+
+    run = gptscript.evaluate(tools, Options(disableCache=True, env=["EXIT_CODE=1"]))
+    await run.text()
+
+    assert run.state() == RunState.Error, "Unexpected run state after exit 1"
+
+    run.opts.env = None
+
+    run = run.next_chat("")
+    await run.text()
+
+    assert run.state() != RunState.Error, "Unexpected run state after restart"
 
 
 @pytest.mark.asyncio
@@ -208,7 +241,7 @@ async def test_eval_with_context(gptscript):
     wd = os.getcwd()
     tool = ToolDef(
         instructions="What is the capital of the united states?",
-        context=[wd + "/tests/fixtures/acorn-labs-context.gpt"],
+        tools=[wd + "/tests/fixtures/acorn-labs-context.gpt"],
     )
 
     run = gptscript.evaluate(tool)
