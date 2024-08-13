@@ -260,6 +260,19 @@ async def test_parse_simple_file(gptscript):
 
 
 @pytest.mark.asyncio
+async def test_parse_empty_file(gptscript):
+    wd = os.getcwd()
+    tools = await gptscript.parse(wd + "/tests//fixtures/empty.gpt")
+    assert len(tools) == 0, "Unexpected number of tools for parsing emtpy file"
+
+
+@pytest.mark.asyncio
+async def test_parse_empty_str(gptscript):
+    tools = await gptscript.parse_tool("")
+    assert len(tools) == 0, "Unexpected number of tools for parsing empty string"
+
+
+@pytest.mark.asyncio
 async def test_parse_tool_with_metadata(gptscript):
     wd = os.getcwd()
     tools = await gptscript.parse(wd + "/tests/fixtures/parse-with-metadata.gpt")

@@ -97,12 +97,16 @@ class GPTScript:
     async def parse(self, file_path: str, disable_cache: bool = False) -> list[Text | Tool]:
         out = await self._run_basic_command("parse", {"file": file_path, "disableCache": disable_cache})
         parsed_nodes = json.loads(out)
+        if parsed_nodes is None or parsed_nodes.get("nodes", None) is None:
+            return []
         return [Text(**node["textNode"]) if "textNode" in node else Tool(**node.get("toolNode", {}).get("tool", {})) for
                 node in parsed_nodes.get("nodes", [])]
 
     async def parse_tool(self, tool_def: str) -> list[Text | Tool]:
         out = await self._run_basic_command("parse", {"content": tool_def})
         parsed_nodes = json.loads(out)
+        if parsed_nodes is None or parsed_nodes.get("nodes", None) is None:
+            return []
         return [Text(**node["textNode"]) if "textNode" in node else Tool(**node.get("toolNode", {}).get("tool", {})) for
                 node in parsed_nodes.get("nodes", [])]
 
