@@ -140,7 +140,7 @@ from gptscript.gptscript import GPTScript
 
 async def parse_tool_example():
     gptscript = GPTScript()
-    tools = await gptscript.parse_tool("Instructions: Say hello!")
+    tools = await gptscript.parse_content("Instructions: Say hello!")
     print(tools)
     gptscript.close()
 ```
@@ -155,7 +155,7 @@ from gptscript.gptscript import GPTScript
 
 async def fmt_example():
     gptscript = GPTScript()
-    tools = await gptscript.parse_tool("Instructions: Say hello!")
+    tools = await gptscript.parse_content("Instructions: Say hello!")
     print(tools)
 
     contents = gptscript.fmt(tools)

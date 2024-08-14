@@ -1,6 +1,6 @@
 from gptscript.gptscript import GPTScript
 from gptscript.confirm import AuthResponse
-from gptscript.frame import RunFrame, CallFrame, PromptFrame
+from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
 from gptscript.run import Run, RunBasicCommand, Options
