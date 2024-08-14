@@ -248,6 +248,13 @@ async def test_eval_with_context(gptscript):
 
     assert "Acorn Labs" == await run.text(), "Unexpected output from eval using context"
 
+@pytest.mark.asyncio
+async def test_load_simple_file(gptscript):
+    wd = os.getcwd()
+    prg = await gptscript.load(wd + "/tests/fixtures/test.gpt")
+    assert prg.toolSet[prg.entryToolId].instructions == "Who was the president of the United States in 1986?", \
+        "Unexpected output from parsing simple file"
+
 
 @pytest.mark.asyncio
 async def test_parse_simple_file(gptscript):

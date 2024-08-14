@@ -9,7 +9,7 @@ from typing import Any, Callable, Awaitable
 import requests
 
 from gptscript.confirm import AuthResponse
-from gptscript.frame import RunFrame, CallFrame, PromptFrame
+from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
 from gptscript.run import Run, RunBasicCommand, Options
@@ -93,6 +93,11 @@ class GPTScript:
         return Run("run", tool_path, opts, self._server_url, event_handlers=event_handlers).next_chat(
             "" if opts is None else opts.input
         )
+
+    async def load(self, file_path: str) -> Program:
+        out = await self._run_basic_command("load", {"file": file_path})
+        parsed_nodes = json.loads(out)
+        return Program(**parsed_nodes.get("program", {}))
 
     async def parse(self, file_path: str, disable_cache: bool = False) -> list[Text | Tool]:
         out = await self._run_basic_command("parse", {"file": file_path, "disableCache": disable_cache})
