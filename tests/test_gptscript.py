@@ -25,9 +25,13 @@ def gptscript():
     if os.getenv("OPENAI_API_KEY") is None:
         pytest.fail("OPENAI_API_KEY not set", pytrace=False)
     try:
+        # Start an initial GPTScript instance.
+        # This one doesn't have any options, but it's there to ensure that using another instance works as expected in all cases.
+        g_first = GPTScript()
         gptscript = GPTScript(GlobalOptions(apiKey=os.getenv("OPENAI_API_KEY")))
         yield gptscript
         gptscript.close()
+        g_first.close()
     except Exception as e:
         pytest.fail(e, pytrace=False)
 
@@ -109,6 +113,33 @@ async def test_version(gptscript):
 async def test_list_models(gptscript):
     models = await gptscript.list_models()
     assert isinstance(models, list) and len(models) > 1, "Expected list_models to return a list"
+
+
+@pytest.mark.asyncio
+async def test_list_models_from_provider(gptscript):
+    models = await gptscript.list_models(
+        providers=["github.com/gptscript-ai/claude3-anthropic-provider"],
+        credential_overrides=["github.com/gptscript-ai/claude3-anthropic-provider/credential:ANTHROPIC_API_KEY"],
+    )
+    assert isinstance(models, list) and len(models) > 1, "Expected list_models to return a list"
+    for model in models:
+        assert model.startswith("claude-3-"), "Unexpected model name"
+        assert model.endswith("from github.com/gptscript-ai/claude3-anthropic-provider"), "Unexpected model name"
+
+
+@pytest.mark.asyncio
+async def test_list_models_from_default_provider():
+    g = GPTScript(GlobalOptions(defaultModelProvider="github.com/gptscript-ai/claude3-anthropic-provider"))
+    try:
+        models = await g.list_models(
+            credential_overrides=["github.com/gptscript-ai/claude3-anthropic-provider/credential:ANTHROPIC_API_KEY"],
+        )
+        assert isinstance(models, list) and len(models) > 1, "Expected list_models to return a list"
+        for model in models:
+            assert model.startswith("claude-3-"), "Unexpected model name"
+            assert model.endswith("from github.com/gptscript-ai/claude3-anthropic-provider"), "Unexpected model name"
+    finally:
+        g.close()
 
 
 @pytest.mark.asyncio
@@ -472,10 +503,11 @@ async def test_confirm(gptscript):
                 event_content += output.content
 
     tool = ToolDef(tools=["sys.exec"], instructions="List the files in the current directory as '.'.")
-    out = await gptscript.evaluate(tool,
-                                   Options(confirm=True, disableCache=True),
-                                   event_handlers=[process_event],
-                                   ).text()
+    out = await gptscript.evaluate(
+        tool,
+        Options(confirm=True, disableCache=True),
+        event_handlers=[process_event],
+    ).text()
 
     assert confirm_event_found, "No confirm event"
     # Running the `dir` command in Windows will give the contents of the tests directory
