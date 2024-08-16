@@ -116,6 +116,7 @@ async def test_list_models(gptscript):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(os.environ.get("ANTHROPIC_API_KEY") is None, reason="ANTHROPIC_API_KEY not set")
 async def test_list_models_from_provider(gptscript):
     models = await gptscript.list_models(
         providers=["github.com/gptscript-ai/claude3-anthropic-provider"],
@@ -128,6 +129,7 @@ async def test_list_models_from_provider(gptscript):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(os.environ.get("ANTHROPIC_API_KEY") is None, reason="ANTHROPIC_API_KEY not set")
 async def test_list_models_from_default_provider():
     g = GPTScript(GlobalOptions(defaultModelProvider="github.com/gptscript-ai/claude3-anthropic-provider"))
     try:
