@@ -26,20 +26,22 @@ class GPTScript:
     def __init__(self, opts: GlobalOptions = None):
         if opts is None:
             opts = GlobalOptions()
+        self.opts = opts
+
         GPTScript.__gptscript_count += 1
 
         if GPTScript.__server_url == "":
             GPTScript.__server_url = os.environ.get("GPTSCRIPT_URL", "127.0.0.1:0")
 
         if GPTScript.__gptscript_count == 1 and os.environ.get("GPTSCRIPT_DISABLE_SERVER", "") != "true":
-            opts.toEnv()
+            self.opts.toEnv()
 
             GPTScript.__process = Popen(
                 [_get_command(), "--listen-address", GPTScript.__server_url, "sdkserver"],
                 stdin=PIPE,
                 stdout=PIPE,
                 stderr=PIPE,
-                env=opts.Env,
+                env=self.opts.Env,
                 text=True,
                 encoding="utf-8",
             )
@@ -81,18 +83,28 @@ class GPTScript:
             opts: Options = None,
             event_handlers: list[Callable[[Run, CallFrame | RunFrame | PromptFrame], Awaitable[None]]] = None
     ) -> Run:
-        return Run("evaluate", tool, opts, self._server_url, event_handlers=event_handlers).next_chat(
-            "" if opts is None else opts.input
-        )
+        opts = opts if opts is not None else Options()
+        return Run(
+            "evaluate",
+            tool,
+            opts.merge_global_opts(self.opts),
+            self._server_url,
+            event_handlers=event_handlers,
+        ).next_chat("" if opts is None else opts.input)
 
     def run(
             self, tool_path: str,
             opts: Options = None,
             event_handlers: list[Callable[[Run, CallFrame | RunFrame | PromptFrame], Awaitable[None]]] = None
     ) -> Run:
-        return Run("run", tool_path, opts, self._server_url, event_handlers=event_handlers).next_chat(
-            "" if opts is None else opts.input
-        )
+        opts = opts if opts is not None else Options()
+        return Run(
+            "run",
+            tool_path,
+            opts.merge_global_opts(self.opts),
+            self._server_url,
+            event_handlers=event_handlers,
+        ).next_chat("" if opts is None else opts.input)
 
     async def parse(self, file_path: str, disable_cache: bool = False) -> list[Text | Tool]:
         out = await self._run_basic_command("parse", {"file": file_path, "disableCache": disable_cache})
@@ -139,8 +151,16 @@ class GPTScript:
     async def list_tools(self) -> str:
         return await self._run_basic_command("list-tools")
 
-    async def list_models(self) -> list[str]:
-        return (await self._run_basic_command("list-models")).split("\n")
+    async def list_models(self, providers: list[str] = None, credential_overrides: list[str] = None) -> list[str]:
+        if self.opts.DefaultModelProvider != "":
+            if providers is None:
+                providers = []
+            providers.append(self.opts.DefaultModelProvider)
+
+        return (await self._run_basic_command(
+            "list-models",
+            {"providers": providers, "credentialOverrides": credential_overrides}
+        )).split("\n")
 
 
 def _get_command():

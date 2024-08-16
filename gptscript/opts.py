@@ -1,16 +1,32 @@
 import os
-from typing import Mapping
+from typing import Mapping, Self
 
 
 class GlobalOptions:
-    def __init__(self,
-                 apiKey: str = "", baseURL: str = "", defaultModelProvider: str = "", defaultModel: str = "",
-                 env: Mapping[str, str] = None):
+    def __init__(
+            self,
+            apiKey: str = "",
+            baseURL: str = "",
+            defaultModelProvider: str = "",
+            defaultModel: str = "",
+            env: Mapping[str, str] = None,
+    ):
         self.APIKey = apiKey
         self.BaseURL = baseURL
         self.DefaultModel = defaultModel
         self.DefaultModelProvider = defaultModelProvider
         self.Env = env
+
+    def merge(self, other: Self) -> Self:
+        cp = self.__class__()
+        if other is None:
+            return cp
+        cp.APIKey = other.APIKey if other.APIKey != "" else self.APIKey
+        cp.BaseURL = other.BaseURL if other.BaseURL != "" else self.BaseURL
+        cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
+        cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
+        cp.Env = (other.Env or []).extend(self.Env or [])
+        return cp
 
     def toEnv(self):
         if self.Env is None:
@@ -56,3 +72,20 @@ class Options(GlobalOptions):
         self.location = location
         self.env = env
         self.forceSequential = forceSequential
+
+    def merge_global_opts(self, other: GlobalOptions) -> Self:
+        cp = super().merge(other)
+        if other is None:
+            return cp
+        cp.input = self.input
+        cp.disableCache = self.disableCache
+        cp.subTool = self.subTool
+        cp.workspace = self.workspace
+        cp.chatState = self.chatState
+        cp.confirm = self.confirm
+        cp.prompt = self.prompt
+        cp.credentialOverrides = self.credentialOverrides
+        cp.location = self.location
+        cp.env = self.env
+        cp.forceSequential = self.forceSequential
+        return cp
