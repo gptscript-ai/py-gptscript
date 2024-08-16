@@ -33,6 +33,7 @@ jobs:
         env:
           GPTSCRIPT_BIN: ./gptscriptexe
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: tox
 
   test-windows:
@@ -52,12 +53,9 @@ jobs:
       - name: Install deps
         run: |
           pip install -r requirements.txt
-      - name: Create config file
-        run: |
-          echo '{"credsStore":"file"}' > config
       - name: Run Tests
         env:
           GPTSCRIPT_BIN: .\gptscript.exe
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GPTSCRIPT_CONFIG_FILE: .\config
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: tox
