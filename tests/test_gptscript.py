@@ -595,6 +595,8 @@ async def test_prompt_with_metadata(gptscript):
             prompt_event_found = True
             assert len(frame.fields) == 1, "Unexpected number of fields: " + str(frame.fields)
             assert "first name" in frame.fields[0], "Unexpected field: " + frame.fields[0]
+            assert "first_name" in frame.metadata, "Unexpected metadata: " + str(frame.metadata)
+            assert frame.metadata["first_name"] == "Clicky", "Unexpected metadata: " + str(frame.metadata)
             await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0]: "Clicky"}))
 
     out = await gptscript.run(
