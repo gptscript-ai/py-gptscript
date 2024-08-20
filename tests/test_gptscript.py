@@ -586,6 +586,28 @@ async def test_prompt(gptscript):
 
 
 @pytest.mark.asyncio
+async def test_prompt_with_metadata(gptscript):
+    prompt_event_found = False
+
+    async def process_event(r: Run, frame: CallFrame | RunFrame | PromptFrame):
+        nonlocal prompt_event_found
+        if frame.type == RunEventType.prompt:
+            prompt_event_found = True
+            assert len(frame.fields) == 1, "Unexpected number of fields: " + str(frame.fields)
+            assert "first name" in frame.fields[0], "Unexpected field: " + frame.fields[0]
+            await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0]: "Clicky"}))
+
+    out = await gptscript.run(
+        "sys.prompt",
+        Options(prompt=True, disableCache=True, input='{"fields": "first name", "metadata": {"first_name": "Clicky"}}'),
+        event_handlers=[process_event],
+    ).text()
+
+    assert prompt_event_found, "No prompt event"
+    assert "Clicky" in out, "Unexpected output: " + out
+
+
+@pytest.mark.asyncio
 async def test_prompt_without_prompt_allowed(gptscript):
     prompt_event_found = False
 
