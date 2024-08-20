@@ -25,7 +25,7 @@ class GlobalOptions:
         cp.BaseURL = other.BaseURL if other.BaseURL != "" else self.BaseURL
         cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
         cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
-        cp.Env = (other.Env or []).extend(self.Env or [])
+        cp.Env = {**(self.Env or {}), **(other.Env or {})}
         return cp
 
     def toEnv(self):
