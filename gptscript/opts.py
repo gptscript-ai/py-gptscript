@@ -15,7 +15,10 @@ class GlobalOptions:
         self.BaseURL = baseURL
         self.DefaultModel = defaultModel
         self.DefaultModelProvider = defaultModelProvider
-        self.Env = env
+        if env is None:
+            env = os.environ
+        env_list = [f"{k}={v}" for k, v in env.items()]
+        self.Env = env_list
 
     def merge(self, other: Self) -> Self:
         cp = self.__class__()
@@ -25,21 +28,21 @@ class GlobalOptions:
         cp.BaseURL = other.BaseURL if other.BaseURL != "" else self.BaseURL
         cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
         cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
-        cp.Env = {**(self.Env or {}), **(other.Env or {})}
+        cp.Env = (other.Env or []).extend(self.Env or [])
         return cp
 
     def toEnv(self):
         if self.Env is None:
-            self.Env = os.environ.copy()
+            self.Env = [f"{k}={v}" for k, v in os.environ.items()]
 
         if self.APIKey != "":
-            self.Env["OPENAI_API_KEY"] = self.APIKey
+            self.Env.append(f"OPENAI_API_KEY={self.APIKey}")
         if self.BaseURL != "":
-            self.Env["OPENAI_BASE_URL"] = self.BaseURL
+            self.Env.append(f"OPENAI_BASE_URL={self.BaseURL}")
         if self.DefaultModel != "":
-            self.Env["GPTSCRIPT_SDKSERVER_DEFAULT_MODEL"] = self.DefaultModel
+            self.Env.append(f"GPTSCRIPT_SDKSERVER_DEFAULT_MODEL={self.DefaultModel}")
         if self.DefaultModelProvider != "":
-            self.Env["GPTSCRIPT_SDKSERVER_DEFAULT_MODEL_PROVIDER"] = self.DefaultModelProvider
+            self.Env.append(f"GPTSCRIPT_SDKSERVER_DEFAULT_MODEL_PROVIDER={self.DefaultModelProvider}")
 
 
 class Options(GlobalOptions):

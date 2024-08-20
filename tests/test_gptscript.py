@@ -430,8 +430,8 @@ async def test_tool_chat(gptscript):
 async def test_file_chat(gptscript):
     inputs = [
         "List the 3 largest of the Great Lakes by volume.",
-        "What is the volume of the second in the list in cubic miles?",
-        "What is the total area of the third in the list in square miles?",
+        "For the second one in the list, what is the volume in cubic miles?",
+        "For the third one in the list, what is the total area in square miles?",
     ]
     expected_outputs = [
         "Lake Superior",

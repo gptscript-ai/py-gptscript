@@ -41,7 +41,7 @@ class GPTScript:
                 stdin=PIPE,
                 stdout=PIPE,
                 stderr=PIPE,
-                env=self.opts.Env,
+                env={e.split("=", 1)[0]: e.split("=", 1)[1] for e in self.opts.Env},
                 text=True,
                 encoding="utf-8",
             )
