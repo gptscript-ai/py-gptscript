@@ -187,12 +187,14 @@ class PromptFrame:
                  time: str = "",
                  message: str = "",
                  fields: list[str] = None,
+                 metadata: dict[str, str] = None,
                  sensitive: bool = False,
                  ):
         self.id = id
         self.time = time
         self.message = message
         self.fields = fields
+        self.metadata = metadata
         self.sensitive = sensitive
         self.type = type
         if isinstance(self.type, str):
