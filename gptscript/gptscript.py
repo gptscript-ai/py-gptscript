@@ -9,7 +9,7 @@ from typing import Any, Callable, Awaitable
 import requests
 
 from gptscript.confirm import AuthResponse
-from gptscript.frame import RunFrame, CallFrame, PromptFrame
+from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
 from gptscript.run import Run, RunBasicCommand, Options
@@ -90,7 +90,7 @@ class GPTScript:
             opts.merge_global_opts(self.opts),
             self._server_url,
             event_handlers=event_handlers,
-        ).next_chat("" if opts is None else opts.input)
+        ).next_chat(opts.input)
 
     def run(
             self, tool_path: str,
@@ -104,7 +104,31 @@ class GPTScript:
             opts.merge_global_opts(self.opts),
             self._server_url,
             event_handlers=event_handlers,
-        ).next_chat("" if opts is None else opts.input)
+        ).next_chat(opts.input)
+
+    async def load_file(self, file_path: str, disable_cache: bool = False, sub_tool: str = '') -> Program:
+        out = await self._run_basic_command(
+            "load",
+            {"file": file_path, "disableCache": disable_cache, "subTool": sub_tool},
+        )
+        parsed_nodes = json.loads(out)
+        return Program(**parsed_nodes.get("program", {}))
+
+    async def load_content(self, content: str, disable_cache: bool = False, sub_tool: str = '') -> Program:
+        out = await self._run_basic_command(
+            "load",
+            {"content": content, "disableCache": disable_cache, "subTool": sub_tool},
+        )
+        parsed_nodes = json.loads(out)
+        return Program(**parsed_nodes.get("program", {}))
+
+    async def load_tools(self, tool_defs: list[ToolDef], disable_cache: bool = False, sub_tool: str = '') -> Program:
+        out = await self._run_basic_command(
+            "load",
+            {"toolDefs": [t.to_json() for t in tool_defs], "disableCache": disable_cache, "subTool": sub_tool},
+        )
+        parsed_nodes = json.loads(out)
+        return Program(**parsed_nodes.get("program", {}))
 
     async def parse(self, file_path: str, disable_cache: bool = False) -> list[Text | Tool]:
         out = await self._run_basic_command("parse", {"file": file_path, "disableCache": disable_cache})
@@ -114,8 +138,8 @@ class GPTScript:
         return [Text(**node["textNode"]) if "textNode" in node else Tool(**node.get("toolNode", {}).get("tool", {})) for
                 node in parsed_nodes.get("nodes", [])]
 
-    async def parse_tool(self, tool_def: str) -> list[Text | Tool]:
-        out = await self._run_basic_command("parse", {"content": tool_def})
+    async def parse_content(self, content: str) -> list[Text | Tool]:
+        out = await self._run_basic_command("parse", {"content": content})
         parsed_nodes = json.loads(out)
         if parsed_nodes is None or parsed_nodes.get("nodes", None) is None:
             return []

@@ -48,10 +48,8 @@ def simple_tool():
 @pytest.fixture
 def complex_tool():
     return ToolDef(
-        tools=["sys.write"],
         jsonResponse=True,
-        instructions="""
-Create three short graphic artist descriptions and their muses.
+        instructions="""Create three short graphic artist descriptions and their muses.
 These should be descriptive and explain their point of view.
 Also come up with a made up name, they each should be from different
 backgrounds and approach art differently.
@@ -272,8 +270,41 @@ async def test_eval_with_context(gptscript):
     )
 
     run = gptscript.evaluate(tool)
-
     assert "Acorn Labs" == await run.text(), "Unexpected output from eval using context"
+
+
+@pytest.mark.asyncio
+async def test_load_simple_file(gptscript):
+    wd = os.getcwd()
+    prg = await gptscript.load_file(wd + "/tests/fixtures/test.gpt")
+    assert prg.toolSet[prg.entryToolId].instructions == "Who was the president of the United States in 1986?", \
+        "Unexpected output from parsing simple file"
+
+
+@pytest.mark.asyncio
+async def test_load_remote_tool(gptscript):
+    prg = await gptscript.load_file("github.com/gptscript-ai/context/workspace")
+    assert prg.entryToolId != "", "Unexpected entry tool id from remote tool"
+    assert len(prg.toolSet) > 0, "Unexpected number of tools in remote tool"
+    assert prg.name != "", "Unexpected name from remote tool"
+
+
+@pytest.mark.asyncio
+async def test_load_simple_content(gptscript):
+    wd = os.getcwd()
+    with open(wd + "/tests/fixtures/test.gpt") as f:
+        prg = await gptscript.load_content(f.read())
+        assert prg.toolSet[prg.entryToolId].instructions == "Who was the president of the United States in 1986?", \
+            "Unexpected output from parsing simple file"
+
+
+@pytest.mark.asyncio
+async def test_load_tools(gptscript, tool_list):
+    prg = await gptscript.load_tools(tool_list)
+    assert prg.entryToolId != "", "Unexpected entry tool id from remote tool"
+    assert len(prg.toolSet) > 0, "Unexpected number of tools in remote tool"
+    # Name will be empty in this case.
+    assert prg.name == "", "Unexpected name from remote tool"
 
 
 @pytest.mark.asyncio
@@ -295,7 +326,7 @@ async def test_parse_empty_file(gptscript):
 
 @pytest.mark.asyncio
 async def test_parse_empty_str(gptscript):
-    tools = await gptscript.parse_tool("")
+    tools = await gptscript.parse_content("")
     assert len(tools) == 0, "Unexpected number of tools for parsing empty string"
 
 
@@ -313,7 +344,7 @@ async def test_parse_tool_with_metadata(gptscript):
 
 @pytest.mark.asyncio
 async def test_parse_tool(gptscript):
-    tools = await gptscript.parse_tool("echo hello")
+    tools = await gptscript.parse_content("echo hello")
     assert len(tools) == 1, "Unexpected number of tools for parsing tool"
     assert isinstance(tools[0], Tool), "Unexpected node type from parsing tool"
     assert tools[0].instructions == "echo hello", "Unexpected output from parsing tool"
@@ -321,7 +352,7 @@ async def test_parse_tool(gptscript):
 
 @pytest.mark.asyncio
 async def test_parse_tool_with_text_node(gptscript):
-    tools = await gptscript.parse_tool("echo hello\n---\n!markdown\nhello")
+    tools = await gptscript.parse_content("echo hello\n---\n!markdown\nhello")
     assert len(tools) == 2, "Unexpected number of tools for parsing tool with text node"
     assert isinstance(tools[0], Tool), "Unexpected node type for first tool from parsing tool with text node"
     assert isinstance(tools[1], Text), "Unexpected node type for second tool from parsing tool with text node"

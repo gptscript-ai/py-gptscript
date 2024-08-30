@@ -47,9 +47,12 @@ class Program:
         self.name = name
         self.entryToolId = entryToolId
         self.toolSet = toolSet
-        for tool in toolSet:
-            if isinstance(self.toolSet[tool], dict):
-                self.toolSet[tool] = Tool(**self.toolSet[tool])
+        if self.toolSet is None:
+            self.toolSet = {}
+        else:
+            for tool in toolSet:
+                if isinstance(self.toolSet[tool], dict):
+                    self.toolSet[tool] = Tool(**self.toolSet[tool])
 
 
 class RunFrame:
