@@ -145,12 +145,6 @@ async def test_list_models_from_default_provider():
 
 
 @pytest.mark.asyncio
-async def test_list_tools(gptscript):
-    out = await gptscript.list_tools()
-    assert out is not None, "Expected some output from list_tools"
-
-
-@pytest.mark.asyncio
 async def test_abort_run(gptscript):
     async def abort_run(run: Run, e: CallFrame | RunFrame | PromptFrame):
         await run.aclose()

@@ -148,9 +148,6 @@ class GPTScript:
     async def version(self) -> str:
         return await self._run_basic_command("version")
 
-    async def list_tools(self) -> str:
-        return await self._run_basic_command("list-tools")
-
     async def list_models(self, providers: list[str] = None, credential_overrides: list[str] = None) -> list[str]:
         if self.opts.DefaultModelProvider != "":
             if providers is None:

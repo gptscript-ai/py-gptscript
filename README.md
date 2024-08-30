@@ -100,21 +100,6 @@ Aside from the list methods there are `exec` and `exec_file` methods that allow 
 responses. Those functions also provide a streaming version of execution if you want to process the output streams in
 your code as the tool is running.
 
-### `list_tools()`
-
-This function lists the available tools.
-
-```python
-from gptscript.gptscript import GPTScript
-
-
-async def list_tools():
-    gptscript = GPTScript()
-    tools = await gptscript.list_tools()
-    print(tools)
-    gptscript.close()
-```
-
 ### `list_models()`
 
 This function lists the available GPT models.
