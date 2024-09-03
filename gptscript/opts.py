@@ -9,12 +9,14 @@ class GlobalOptions:
             baseURL: str = "",
             defaultModelProvider: str = "",
             defaultModel: str = "",
+            cacheDir: str = "",
             env: Mapping[str, str] = None,
     ):
         self.APIKey = apiKey
         self.BaseURL = baseURL
         self.DefaultModel = defaultModel
         self.DefaultModelProvider = defaultModelProvider
+        self.CacheDir = cacheDir
         if env is None:
             env = os.environ
         env_list = [f"{k}={v}" for k, v in env.items()]
@@ -28,6 +30,7 @@ class GlobalOptions:
         cp.BaseURL = other.BaseURL if other.BaseURL != "" else self.BaseURL
         cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
         cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
+        cp.CacheDir = other.CacheDir if other.CacheDir != "" else self.CacheDir
         cp.Env = (other.Env or []).extend(self.Env or [])
         return cp
 
@@ -61,9 +64,10 @@ class Options(GlobalOptions):
                  apiKey: str = "",
                  baseURL: str = "",
                  defaultModelProvider: str = "",
-                 defaultModel: str = ""
+                 defaultModel: str = "",
+                 cacheDir: str = "",
                  ):
-        super().__init__(apiKey, baseURL, defaultModelProvider, defaultModel)
+        super().__init__(apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir)
         self.input = input
         self.disableCache = disableCache
         self.subTool = subTool
