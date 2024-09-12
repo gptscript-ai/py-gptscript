@@ -503,7 +503,10 @@ async def test_global_tools(gptscript):
                 call_finish_seen = True
 
     run = gptscript.run(os.getcwd() + "/tests/fixtures/global-tools.gpt",
-                        Options(disableCache=True),
+                        Options(
+                            disableCache=True,
+                            credentialOverrides=["github.com/gptscript-ai/gateway:OPENAI_API_KEY"],
+                        ),
                         event_handlers=[process_event],
                         )
 
