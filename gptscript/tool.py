@@ -58,6 +58,11 @@ class ToolDef:
                  export: list[str] = None,
                  agents: list[str] = None,
                  credentials: list[str] = None,
+                 exportCredentials: list[str] = None,
+                 inputFilters: list[str] = None,
+                 exportInputFilters: list[str] = None,
+                 outputFilters: list[str] = None,
+                 exportOutputFilters: list[str] = None,
                  instructions: str = "",
                  type: str = "",
                  metaData: dict[str, str] = None,
@@ -84,6 +89,11 @@ class ToolDef:
         self.export = export
         self.agents = agents
         self.credentials = credentials
+        self.exportCredentials = exportCredentials
+        self.inputFilters = inputFilters
+        self.exportInputFilters = exportInputFilters
+        self.outputFilters = outputFilters
+        self.exportOutputFilters = exportOutputFilters
         self.instructions = instructions
         self.type = type
         self.metaData = metaData
@@ -164,6 +174,11 @@ class Tool(ToolDef):
                  export: list[str] = None,
                  agents: list[str] = None,
                  credentials: list[str] = None,
+                 exportCredentials: list[str] = None,
+                 inputFilters: list[str] = None,
+                 exportInputFilters: list[str] = None,
+                 outputFilters: list[str] = None,
+                 exportOutputFilters: list[str] = None,
                  instructions: str = "",
                  type: str = "",
                  metaData: dict[str, str] = None,
@@ -174,7 +189,8 @@ class Tool(ToolDef):
                  ):
         super().__init__(name, description, maxTokens, modelName, modelProvider, jsonResponse, temperature, cache, chat,
                          internalPrompt, arguments, tools, globalTools, globalModelName, context, exportContext, export,
-                         agents, credentials, instructions, type, metaData)
+                         agents, credentials, exportCredentials, inputFilters, exportInputFilters, outputFilters,
+                         exportOutputFilters, instructions, type, metaData)
 
         self.id = id
         self.toolMapping = toolMapping
