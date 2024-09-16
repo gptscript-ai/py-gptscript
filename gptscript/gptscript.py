@@ -9,6 +9,7 @@ from typing import Any, Callable, Awaitable
 import requests
 
 from gptscript.confirm import AuthResponse
+from gptscript.credentials import Credential
 from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
@@ -182,6 +183,38 @@ class GPTScript:
             "list-models",
             {"providers": providers, "credentialOverrides": credential_overrides}
         )).split("\n")
+
+    async def list_credentials(self, context: str = "default", all_contexts: bool = False) -> list[Credential] | str:
+        res = await self._run_basic_command(
+            "credentials",
+            {"context": context, "allContexts": all_contexts}
+        )
+        if res.startswith("an error occurred:"):
+            return res
+
+        return [Credential(**c) for c in json.loads(res)]
+
+    async def create_credential(self, cred: Credential) -> str:
+        return await self._run_basic_command(
+            "credentials/create",
+            {"content": cred.to_json()}
+        )
+
+    async def reveal_credential(self, context: str = "default", name: str = "") -> Credential | str:
+        res = await self._run_basic_command(
+            "credentials/reveal",
+            {"context": context, "name": name}
+        )
+        if res.startswith("an error occurred:"):
+            return res
+
+        return Credential(**json.loads(res))
+
+    async def delete_credential(self, context: str = "default", name: str = "") -> str:
+        return await self._run_basic_command(
+            "credentials/delete",
+            {"context": context, "name": name}
+        )
 
 
 def _get_command():
