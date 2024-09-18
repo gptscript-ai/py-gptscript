@@ -4,10 +4,13 @@ import json
 import os
 import platform
 import subprocess
+from datetime import datetime, timedelta, timezone
+from time import sleep
 
 import pytest
 
 from gptscript.confirm import AuthResponse
+from gptscript.credentials import Credential
 from gptscript.exec_utils import get_env
 from gptscript.frame import RunEventType, CallFrame, RunFrame, RunState, PromptFrame
 from gptscript.gptscript import GPTScript
@@ -683,3 +686,26 @@ async def test_parse_with_metadata_then_run(gptscript):
     tools = await gptscript.parse(cwd + "/tests/fixtures/parse-with-metadata.gpt")
     run = gptscript.evaluate(tools[0])
     assert "200" == await run.text(), "Expect file to have correct output"
+
+@pytest.mark.asyncio
+async def test_credentials(gptscript):
+    name = "test-" + str(os.urandom(4).hex())
+    now = datetime.now()
+    res = await gptscript.create_credential(Credential(toolName=name, env={"TEST": "test"}, expiresAt=now + timedelta(seconds=5)))
+    assert not res.startswith("an error occurred"), "Unexpected error creating credential: " + res
+
+    sleep(5)
+
+    res = await gptscript.list_credentials()
+    assert not str(res).startswith("an error occurred"), "Unexpected error listing credentials: " + str(res)
+    assert len(res) > 0, "Expected at least one credential"
+    for cred in res:
+        if cred.toolName == name:
+            assert cred.expiresAt < datetime.now(timezone.utc), "Expected credential to have expired"
+
+    res = await gptscript.reveal_credential(name=name)
+    assert not str(res).startswith("an error occurred"), "Unexpected error revealing credential: " + res
+    assert res.env["TEST"] == "test", "Unexpected credential value: " + str(res)
+
+    res = await gptscript.delete_credential(name=name)
+    assert not res.startswith("an error occurred"), "Unexpected error deleting credential: " + res

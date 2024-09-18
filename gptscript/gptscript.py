@@ -4,11 +4,12 @@ import platform
 from subprocess import Popen, PIPE
 from sys import executable
 from time import sleep
-from typing import Any, Callable, Awaitable
+from typing import Any, Callable, Awaitable, List
 
 import requests
 
 from gptscript.confirm import AuthResponse
+from gptscript.credentials import Credential, to_credential
 from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
@@ -182,6 +183,44 @@ class GPTScript:
             "list-models",
             {"providers": providers, "credentialOverrides": credential_overrides}
         )).split("\n")
+
+    async def list_credentials(self, contexts: List[str] = None, all_contexts: bool = False) -> list[Credential] | str:
+        if contexts is None:
+            contexts = ["default"]
+
+        res = await self._run_basic_command(
+            "credentials",
+            {"context": contexts, "allContexts": all_contexts}
+        )
+        if res.startswith("an error occurred:"):
+            return res
+
+        return [to_credential(cred) for cred in json.loads(res)]
+
+    async def create_credential(self, cred: Credential) -> str:
+        return await self._run_basic_command(
+            "credentials/create",
+            {"content": cred.to_json()}
+        )
+
+    async def reveal_credential(self, contexts: List[str] = None, name: str = "") -> Credential | str:
+        if contexts is None:
+            contexts = ["default"]
+
+        res = await self._run_basic_command(
+            "credentials/reveal",
+            {"context": contexts, "name": name}
+        )
+        if res.startswith("an error occurred:"):
+            return res
+
+        return to_credential(json.loads(res))
+
+    async def delete_credential(self, context: str = "default", name: str = "") -> str:
+        return await self._run_basic_command(
+            "credentials/delete",
+            {"context": [context], "name": name}
+        )
 
 
 def _get_command():
