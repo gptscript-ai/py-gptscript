@@ -9,7 +9,7 @@ from typing import Any, Callable, Awaitable, List
 import requests
 
 from gptscript.confirm import AuthResponse
-from gptscript.credentials import Credential
+from gptscript.credentials import Credential, to_credential
 from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
@@ -195,7 +195,7 @@ class GPTScript:
         if res.startswith("an error occurred:"):
             return res
 
-        return [Credential(**c) for c in json.loads(res)]
+        return [to_credential(cred) for cred in json.loads(res)]
 
     async def create_credential(self, cred: Credential) -> str:
         return await self._run_basic_command(
@@ -214,7 +214,7 @@ class GPTScript:
         if res.startswith("an error occurred:"):
             return res
 
-        return Credential(**json.loads(res))
+        return to_credential(json.loads(res))
 
     async def delete_credential(self, context: str = "default", name: str = "") -> str:
         return await self._run_basic_command(

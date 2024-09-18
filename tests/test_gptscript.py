@@ -4,6 +4,8 @@ import json
 import os
 import platform
 import subprocess
+from datetime import datetime, timedelta, timezone
+from time import sleep
 
 import pytest
 
@@ -688,12 +690,18 @@ async def test_parse_with_metadata_then_run(gptscript):
 @pytest.mark.asyncio
 async def test_credentials(gptscript):
     name = "test-" + str(os.urandom(4).hex())
-    res = await gptscript.create_credential(Credential(toolName=name, env={"TEST": "test"}))
+    now = datetime.now()
+    res = await gptscript.create_credential(Credential(toolName=name, env={"TEST": "test"}, expiresAt=now + timedelta(seconds=5)))
     assert not res.startswith("an error occurred"), "Unexpected error creating credential: " + res
+
+    sleep(5)
 
     res = await gptscript.list_credentials()
     assert not str(res).startswith("an error occurred"), "Unexpected error listing credentials: " + str(res)
     assert len(res) > 0, "Expected at least one credential"
+    for cred in res:
+        if cred.toolName == name:
+            assert cred.expiresAt < datetime.now(timezone.utc), "Expected credential to have expired"
 
     res = await gptscript.reveal_credential(name=name)
     assert not str(res).startswith("an error occurred"), "Unexpected error revealing credential: " + res

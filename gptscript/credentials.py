@@ -9,15 +9,15 @@ def is_timezone_aware(dt: datetime):
 
 
 class CredentialType(Enum):
-    Tool = "tool",
-    ModelProvider = "modelProvider"
+    tool = "tool",
+    modelProvider = "modelProvider"
 
 
 class Credential:
     def __init__(self,
                  context: str = "default",
                  toolName: str = "",
-                 type: CredentialType = CredentialType.Tool,
+                 type: CredentialType = CredentialType.tool,
                  env: dict[str, str] = None,
                  ephemeral: bool = False,
                  expiresAt: datetime = None,
@@ -76,3 +76,20 @@ class CredentialRequest:
         self.allContexts = allContexts
         self.contexts = contexts
         self.name = name
+
+def to_credential(c) -> Credential:
+    expiresAt = c["expiresAt"]
+    if expiresAt is not None:
+        if expiresAt.endswith("Z"):
+            expiresAt = expiresAt.replace("Z", "+00:00")
+        expiresAt = datetime.fromisoformat(expiresAt)
+
+    return Credential(
+        context=c["context"],
+        toolName=c["toolName"],
+        type=CredentialType[c["type"]],
+        env=c["env"],
+        ephemeral=c.get("ephemeral", False),
+        expiresAt=expiresAt,
+        refreshToken=c["refreshToken"],
+    )
