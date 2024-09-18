@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timezone
 from enum import Enum
+from typing import List
 
 
 def is_timezone_aware(dt: datetime):
@@ -65,10 +66,13 @@ class CredentialRequest:
     def __init__(self,
                  content: str = "",
                  allContexts: bool = False,
-                 context: str = "default",
+                 contexts: List[str] = None,
                  name: str = "",
                  ):
+        if contexts is None:
+            contexts = ["default"]
+
         self.content = content
         self.allContexts = allContexts
-        self.context = context
+        self.contexts = contexts
         self.name = name

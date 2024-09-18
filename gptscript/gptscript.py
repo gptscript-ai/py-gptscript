@@ -4,7 +4,7 @@ import platform
 from subprocess import Popen, PIPE
 from sys import executable
 from time import sleep
-from typing import Any, Callable, Awaitable
+from typing import Any, Callable, Awaitable, List
 
 import requests
 
@@ -184,10 +184,13 @@ class GPTScript:
             {"providers": providers, "credentialOverrides": credential_overrides}
         )).split("\n")
 
-    async def list_credentials(self, context: str = "default", all_contexts: bool = False) -> list[Credential] | str:
+    async def list_credentials(self, contexts: List[str] = None, all_contexts: bool = False) -> list[Credential] | str:
+        if contexts is None:
+            contexts = ["default"]
+
         res = await self._run_basic_command(
             "credentials",
-            {"context": context, "allContexts": all_contexts}
+            {"context": contexts, "allContexts": all_contexts}
         )
         if res.startswith("an error occurred:"):
             return res
@@ -200,10 +203,13 @@ class GPTScript:
             {"content": cred.to_json()}
         )
 
-    async def reveal_credential(self, context: str = "default", name: str = "") -> Credential | str:
+    async def reveal_credential(self, contexts: List[str] = None, name: str = "") -> Credential | str:
+        if contexts is None:
+            contexts = ["default"]
+
         res = await self._run_basic_command(
             "credentials/reveal",
-            {"context": context, "name": name}
+            {"context": contexts, "name": name}
         )
         if res.startswith("an error occurred:"):
             return res
@@ -213,7 +219,7 @@ class GPTScript:
     async def delete_credential(self, context: str = "default", name: str = "") -> str:
         return await self._run_basic_command(
             "credentials/delete",
-            {"context": context, "name": name}
+            {"context": [context], "name": name}
         )
 
 
