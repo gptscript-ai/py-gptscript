@@ -58,6 +58,7 @@ class Options(GlobalOptions):
                  confirm: bool = False,
                  prompt: bool = False,
                  credentialOverrides: list[str] = None,
+                 credentialContexts: list[str] = None,
                  location: str = "",
                  env: list[str] = None,
                  forceSequential: bool = False,
@@ -76,6 +77,7 @@ class Options(GlobalOptions):
         self.confirm = confirm
         self.prompt = prompt
         self.credentialOverrides = credentialOverrides
+        self.credentialContexts = credentialContexts
         self.location = location
         self.env = env
         self.forceSequential = forceSequential
@@ -92,6 +94,7 @@ class Options(GlobalOptions):
         cp.confirm = self.confirm
         cp.prompt = self.prompt
         cp.credentialOverrides = self.credentialOverrides
+        cp.credentialContexts = self.credentialContexts
         cp.location = self.location
         cp.env = self.env
         cp.forceSequential = self.forceSequential
