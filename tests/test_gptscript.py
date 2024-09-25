@@ -192,9 +192,18 @@ exit $env:EXIT_CODE
 
 @pytest.mark.asyncio
 async def test_eval_simple_tool(gptscript, simple_tool):
-    run = gptscript.evaluate(simple_tool)
+    run = gptscript.evaluate(simple_tool, Options(disableCache=True))
     out = await run.text()
+    prompt_tokens, completion_tokens, total_tokens = 0, 0, 0
+    for c in run.calls().values():
+        prompt_tokens += c.usage.promptTokens
+        completion_tokens += c.usage.completionTokens
+        total_tokens += c.usage.totalTokens
+
     assert "Washington" in out, "Unexpected response for tool run"
+    assert prompt_tokens > 0, "Unexpected promptTokens for tool run"
+    assert completion_tokens > 0, "Unexpected completionTokens for tool run"
+    assert total_tokens > 0, "Unexpected totalTokens for tool run"
 
 
 @pytest.mark.asyncio
@@ -209,6 +218,13 @@ async def test_eval_tool_list(gptscript, tool_list):
     run = gptscript.evaluate(tool_list)
     out = await run.text()
     assert out.strip() == "hello there", "Unexpected output from eval using a list of tools"
+
+    # In this case, we expect the total number of toolResults to be 1
+    total_tool_results = 0
+    for c in run.calls().values():
+        total_tool_results += c.toolResults
+
+    assert total_tool_results == 1, "Unexpected number of toolResults"
 
 
 @pytest.mark.asyncio
@@ -232,6 +248,23 @@ async def test_stream_exec_complex_tool(gptscript, complex_tool):
     out = await run.text()
     assert '"artists":' in out, "Expected some output from streaming using complex_tool"
     assert '"artists":' in stream_output, "Expected stream_output to have output"
+
+
+@pytest.mark.asyncio
+async def test_simple_run_file(gptscript):
+    cwd = os.getcwd().removesuffix("/tests")
+    run = gptscript.run(cwd + "/tests/fixtures/test.gpt")
+    out = await run.text()
+    assert "Ronald Reagan" in out, "Expect run file to have correct output"
+
+    # Run again and make sure the output is the same, and the cache is used
+    run = gptscript.run(cwd + "/tests/fixtures/test.gpt")
+    second_out = await run.text()
+    assert second_out == out, "Expect run file to have same output as previous run"
+
+    # In this case, we expect one cached call frame
+    for c in run.calls().values():
+        assert c.chatResponseCached, "Expect chatResponseCached to be true"
 
 
 @pytest.mark.asyncio
@@ -687,11 +720,13 @@ async def test_parse_with_metadata_then_run(gptscript):
     run = gptscript.evaluate(tools[0])
     assert "200" == await run.text(), "Expect file to have correct output"
 
+
 @pytest.mark.asyncio
 async def test_credentials(gptscript):
     name = "test-" + str(os.urandom(4).hex())
     now = datetime.now()
-    res = await gptscript.create_credential(Credential(toolName=name, env={"TEST": "test"}, expiresAt=now + timedelta(seconds=5)))
+    res = await gptscript.create_credential(
+        Credential(toolName=name, env={"TEST": "test"}, expiresAt=now + timedelta(seconds=5)))
     assert not res.startswith("an error occurred"), "Unexpected error creating credential: " + res
 
     sleep(5)
