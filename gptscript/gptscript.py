@@ -32,13 +32,15 @@ class GPTScript:
         GPTScript.__gptscript_count += 1
 
         if GPTScript.__server_url == "":
-            GPTScript.__server_url = os.environ.get("GPTSCRIPT_URL", "127.0.0.1:0")
+            GPTScript.__server_url = os.environ.get("GPTSCRIPT_URL", "http://127.0.0.1:0")
+            if not (GPTScript.__server_url.startswith("http://") or GPTScript.__server_url.startswith("https://")):
+                GPTScript.__server_url = f"http://{GPTScript.__server_url}"
 
-        if GPTScript.__gptscript_count == 1 and os.environ.get("GPTSCRIPT_DISABLE_SERVER", "") != "true":
+        if GPTScript.__gptscript_count == 1 and os.environ.get("GPTSCRIPT_URL", "") == "":
             self.opts.toEnv()
 
             GPTScript.__process = Popen(
-                [_get_command(), "--listen-address", GPTScript.__server_url, "sdkserver"],
+                [_get_command(), "--listen-address", GPTScript.__server_url.removeprefix("http://"), "sdkserver"],
                 stdin=PIPE,
                 stdout=PIPE,
                 stderr=PIPE,
@@ -51,7 +53,10 @@ class GPTScript:
             if "=" in GPTScript.__server_url:
                 GPTScript.__server_url = GPTScript.__server_url.split("=")[1]
 
-        self._server_url = f"http://{GPTScript.__server_url}"
+        self.opts.Env.append("GPTSCRIPT_URL=" + GPTScript.__server_url)
+        self._server_url = GPTScript.__server_url
+        if not (self._server_url.startswith("http://") or self._server_url.startswith("https://")):
+            self._server_url = f"http://{self._server_url}"
         self._wait_for_gptscript()
 
     def _wait_for_gptscript(self):
