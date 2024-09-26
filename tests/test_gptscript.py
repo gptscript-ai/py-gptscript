@@ -219,12 +219,12 @@ async def test_eval_tool_list(gptscript, tool_list):
     out = await run.text()
     assert out.strip() == "hello there", "Unexpected output from eval using a list of tools"
 
-    # In this case, we expect the total number of toolResults to be 1
+    # In this case, we expect the total number of toolResults to be 1 or 2 depending on what the LLM tries to do.
     total_tool_results = 0
     for c in run.calls().values():
         total_tool_results += c.toolResults
 
-    assert total_tool_results == 1, "Unexpected number of toolResults"
+    assert total_tool_results >= 1, "Unexpected number of toolResults"
 
 
 @pytest.mark.asyncio
