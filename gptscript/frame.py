@@ -140,6 +140,8 @@ class CallFrame:
                  output: list[Output] = None,
                  error: str = "",
                  usage: Usage = None,
+                 chatResponseCached: bool = False,
+                 toolResults: int = 0,
                  llmRequest: Any = None,
                  llmResponse: Any = None,
                  ):
@@ -179,6 +181,8 @@ class CallFrame:
         self.usage = usage
         if isinstance(self.usage, dict):
             self.usage = Usage(**self.usage)
+        self.chatResponseCached = chatResponseCached
+        self.toolResults = toolResults
         self.llmRequest = llmRequest
         self.llmResponse = llmResponse
 
