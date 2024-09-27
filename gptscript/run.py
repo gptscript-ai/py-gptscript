@@ -57,6 +57,8 @@ class Run:
                 self._err = "Run was aborted"
             else:
                 self._err = str(e)
+
+            raise Exception(self._err)
         finally:
             self._task = None
 

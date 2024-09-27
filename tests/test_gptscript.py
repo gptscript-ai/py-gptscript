@@ -152,8 +152,11 @@ async def test_abort_run(gptscript):
 
     run = gptscript.evaluate(ToolDef(instructions="What is the capital of the united states?"),
                              Options(disableCache=True), event_handlers=[abort_run])
+    try:
+        await run.text()
+    except Exception as e:
+        assert "Run was aborted" in str(e), "Unexpected output from abort_run"
 
-    assert "Run was aborted" in await run.text(), "Unexpected output from abort_run"
     assert RunState.Error == run.state(), "Unexpected run state after aborting"
 
 
