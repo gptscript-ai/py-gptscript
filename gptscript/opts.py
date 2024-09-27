@@ -5,6 +5,8 @@ from typing import Mapping, Self
 class GlobalOptions:
     def __init__(
             self,
+            url: str = "",
+            token: str = "",
             apiKey: str = "",
             baseURL: str = "",
             defaultModelProvider: str = "",
@@ -12,6 +14,8 @@ class GlobalOptions:
             cacheDir: str = "",
             env: Mapping[str, str] = None,
     ):
+        self.URL = url
+        self.Token = token
         self.APIKey = apiKey
         self.BaseURL = baseURL
         self.DefaultModel = defaultModel
@@ -25,7 +29,9 @@ class GlobalOptions:
     def merge(self, other: Self) -> Self:
         cp = self.__class__()
         if other is None:
-            return cp
+            return self
+        cp.URL = other.URL if other.URL != "" else self.URL
+        cp.Token = other.Token if other.Token != "" else self.Token
         cp.APIKey = other.APIKey if other.APIKey != "" else self.APIKey
         cp.BaseURL = other.BaseURL if other.BaseURL != "" else self.BaseURL
         cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
@@ -62,13 +68,15 @@ class Options(GlobalOptions):
                  location: str = "",
                  env: list[str] = None,
                  forceSequential: bool = False,
+                 url: str = "",
+                 token: str = "",
                  apiKey: str = "",
                  baseURL: str = "",
                  defaultModelProvider: str = "",
                  defaultModel: str = "",
                  cacheDir: str = "",
                  ):
-        super().__init__(apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir)
+        super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir)
         self.input = input
         self.disableCache = disableCache
         self.subTool = subTool

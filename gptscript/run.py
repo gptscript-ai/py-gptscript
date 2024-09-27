@@ -10,11 +10,10 @@ from gptscript.tool import ToolDef, Tool
 
 
 class Run:
-    def __init__(self, subCommand: str, tools: Union[ToolDef | list[ToolDef] | str], opts: Options, gptscriptURL: str,
+    def __init__(self, subCommand: str, tools: Union[ToolDef | list[ToolDef] | str], opts: Options,
                  event_handlers: list[Callable[[Self, CallFrame | RunFrame | PromptFrame], Awaitable[None]]] = None):
         self.requestPath = subCommand
         self.tools = tools
-        self.gptscriptURL = gptscriptURL
         self.event_handlers = event_handlers
         self.opts = opts
         if self.opts is None:
@@ -78,8 +77,7 @@ class Run:
 
         run = self
         if run.state != RunState.Creating:
-            run = type(self)(self.requestPath, self.tools, self.opts, self.gptscriptURL,
-                             event_handlers=self.event_handlers)
+            run = type(self)(self.requestPath, self.tools, self.opts, event_handlers=self.event_handlers)
 
         if self.chatState and self._state == RunState.Continue:
             # Only update the chat state if the previous run didn't error.
@@ -120,7 +118,16 @@ class Run:
         async with httpx.AsyncClient(timeout=httpx.Timeout(15 * 60.0)) as client:
             method = "GET" if tool is None else "POST"
 
-            async with client.stream(method, self.gptscriptURL + "/" + self.requestPath, json=tool) as resp:
+            headers = None
+            if self.opts.Token:
+                headers = {"Authorization": f"Bearer {self.opts.Token}"}
+
+            async with client.stream(
+                    method,
+                    self.opts.URL + "/" + self.requestPath,
+                    json=tool,
+                    headers=headers,
+            ) as resp:
                 self._resp = resp
                 self._state = RunState.Running
                 done = True
@@ -203,8 +210,8 @@ class Run:
 
 
 class RunBasicCommand(Run):
-    def __init__(self, subCommand: str, request_body: Any, gptscriptURL: str):
-        super().__init__(subCommand, "", Options(), gptscriptURL)
+    def __init__(self, subCommand: str, request_body: Any, gptscriptURL: str, gptscriptToken: str):
+        super().__init__(subCommand, "", Options(url=gptscriptURL, token=gptscriptToken))
         self.request_body = request_body
 
     def next_chat(self, input: str = "") -> Self:
