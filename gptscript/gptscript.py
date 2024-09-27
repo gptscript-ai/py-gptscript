@@ -3,10 +3,7 @@ import os
 import platform
 from subprocess import Popen, PIPE
 from sys import executable
-from time import sleep
 from typing import Any, Callable, Awaitable, List
-
-import requests
 
 from gptscript.confirm import AuthResponse
 from gptscript.credentials import Credential, to_credential
@@ -22,25 +19,23 @@ class GPTScript:
     __gptscript_count = 0
     __server_url = ""
     __process: Popen = None
-    __server_ready: bool = False
 
     def __init__(self, opts: GlobalOptions = None):
         if opts is None:
             opts = GlobalOptions()
         self.opts = opts
 
+        start_sdk = GPTScript.__process is None and GPTScript.__server_url == "" and self.opts.URL == ""
         GPTScript.__gptscript_count += 1
-
         if GPTScript.__server_url == "":
-            GPTScript.__server_url = os.environ.get("GPTSCRIPT_URL", "http://127.0.0.1:0")
-            if not (GPTScript.__server_url.startswith("http://") or GPTScript.__server_url.startswith("https://")):
-                GPTScript.__server_url = f"http://{GPTScript.__server_url}"
+            GPTScript.__server_url = os.environ.get("GPTSCRIPT_URL", "")
+            start_sdk = start_sdk and GPTScript.__server_url == ""
 
-        if GPTScript.__gptscript_count == 1 and os.environ.get("GPTSCRIPT_URL", "") == "":
+        if start_sdk:
             self.opts.toEnv()
 
             GPTScript.__process = Popen(
-                [_get_command(), "--listen-address", GPTScript.__server_url.removeprefix("http://"), "sdkserver"],
+                [_get_command(), "sys.sdkserver", "--listen-address", "127.0.0.1:0"],
                 stdin=PIPE,
                 stdout=PIPE,
                 stderr=PIPE,
@@ -53,35 +48,25 @@ class GPTScript:
             if "=" in GPTScript.__server_url:
                 GPTScript.__server_url = GPTScript.__server_url.split("=")[1]
 
-        self.opts.Env.append("GPTSCRIPT_URL=" + GPTScript.__server_url)
-        self._server_url = GPTScript.__server_url
-        if not (self._server_url.startswith("http://") or self._server_url.startswith("https://")):
-            self._server_url = f"http://{self._server_url}"
-        self._wait_for_gptscript()
+        if self.opts.URL == "":
+            self.opts.URL = GPTScript.__server_url
+        if not (self.opts.URL.startswith("http://") or self.opts.URL.startswith("https://")):
+            self.opts.URL = f"http://{self.opts.URL}"
 
-    def _wait_for_gptscript(self):
-        if not GPTScript.__server_ready:
-            for _ in range(0, 20):
-                try:
-                    resp = requests.get(self._server_url + "/healthz")
-                    if resp.status_code == 200:
-                        GPTScript.__server_ready = True
-                        return
-                except requests.exceptions.ConnectionError:
-                    pass
+        self.opts.Env.append("GPTSCRIPT_URL=" + self.opts.URL)
 
-                sleep(1)
-
-            raise Exception("Failed to start gptscript")
+        if self.opts.Token == "":
+            self.opts.Token = os.environ.get("GPTSCRIPT_TOKEN", "")
+        if self.opts.Token != "":
+            self.opts.Env.append("GPTSCRIPT_TOKEN=" + self.opts.Token)
 
     def close(self):
         GPTScript.__gptscript_count -= 1
         if GPTScript.__gptscript_count == 0 and GPTScript.__process is not None:
             GPTScript.__process.stdin.close()
             GPTScript.__process.wait()
-            GPTScript.__server_ready = False
             GPTScript.__process = None
-            self._server_url = ""
+            self.opts = None
 
     def evaluate(
             self,
@@ -94,7 +79,6 @@ class GPTScript:
             "evaluate",
             tool,
             opts.merge_global_opts(self.opts),
-            self._server_url,
             event_handlers=event_handlers,
         ).next_chat(opts.input)
 
@@ -108,7 +92,6 @@ class GPTScript:
             "run",
             tool_path,
             opts.merge_global_opts(self.opts),
-            self._server_url,
             event_handlers=event_handlers,
         ).next_chat(opts.input)
 
@@ -165,7 +148,7 @@ class GPTScript:
         await self._run_basic_command("prompt-response/" + resp.id, resp.responses)
 
     async def _run_basic_command(self, sub_command: str, request_body: Any = None):
-        run = RunBasicCommand(sub_command, request_body, self._server_url)
+        run = RunBasicCommand(sub_command, request_body, self.opts.URL, self.opts.Token)
 
         run.next_chat()
 
