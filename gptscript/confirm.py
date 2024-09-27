@@ -3,6 +3,7 @@ class AuthResponse:
                  id: str = "",
                  accept: bool = "",
                  message: str = "",
+                 **kwargs,
                  ):
         self.id = id
         self.accept = accept

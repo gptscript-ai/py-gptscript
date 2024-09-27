@@ -43,6 +43,7 @@ class Program:
                  name: str = "",
                  entryToolId: str = "",
                  toolSet: dict[str, Tool] = None,
+                 **kwargs,
                  ):
         self.name = name
         self.entryToolId = entryToolId
@@ -67,6 +68,7 @@ class RunFrame:
                  end: str = "",
                  state: RunState = RunState.Creating,
                  chatState: str = "",
+                 **kwargs,
                  ):
         self.id = id
         self.type = type
@@ -88,6 +90,7 @@ class Call:
     def __init__(self,
                  toolID: str = "",
                  input: str = "",
+                 **kwargs,
                  ):
         self.toolID = toolID
         self.input = input
@@ -97,6 +100,7 @@ class Output:
     def __init__(self,
                  content: str = "",
                  subCalls: dict[str, Call] = None,
+                 **kwargs,
                  ):
         self.content = content
         self.subCalls = subCalls
@@ -106,6 +110,7 @@ class InputContext:
     def __init__(self,
                  toolID: str = "",
                  content: str = "",
+                 **kwargs,
                  ):
         self.toolID = toolID
         self.content = content
@@ -116,6 +121,7 @@ class Usage:
                  promptTokens: int = 0,
                  completionTokens: int = 0,
                  totalTokens: int = 0,
+                 **kwargs,
                  ):
         self.promptTokens = promptTokens
         self.completionTokens = completionTokens
@@ -144,6 +150,7 @@ class CallFrame:
                  toolResults: int = 0,
                  llmRequest: Any = None,
                  llmResponse: Any = None,
+                 **kwargs,
                  ):
         self.id = id
         self.tool = tool
@@ -196,6 +203,7 @@ class PromptFrame:
                  fields: list[str] = None,
                  metadata: dict[str, str] = None,
                  sensitive: bool = False,
+                 **kwargs,
                  ):
         self.id = id
         self.time = time

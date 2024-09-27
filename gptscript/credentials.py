@@ -22,6 +22,7 @@ class Credential:
                  ephemeral: bool = False,
                  expiresAt: datetime = None,
                  refreshToken: str = "",
+                 **kwargs,
                  ):
         self.context = context
         self.toolName = toolName
@@ -62,6 +63,7 @@ class Credential:
 
         return json.dumps(req)
 
+
 class CredentialRequest:
     def __init__(self,
                  content: str = "",
@@ -76,6 +78,7 @@ class CredentialRequest:
         self.allContexts = allContexts
         self.contexts = contexts
         self.name = name
+
 
 def to_credential(c) -> Credential:
     expiresAt = c["expiresAt"]
