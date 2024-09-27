@@ -5,6 +5,7 @@ class Text:
     def __init__(self,
                  fmt: str = "",
                  text: str = "",
+                 **kwargs,
                  ):
         if fmt == "" and text.startswith("!"):
             fmt = text[1:text.index("\n")]

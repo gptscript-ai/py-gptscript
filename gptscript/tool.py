@@ -6,6 +6,7 @@ class Property:
                  type: str = "string",
                  description: str = "",
                  default: str = "",
+                 **kwargs,
                  ):
         self.type = type
         self.description = description
@@ -20,6 +21,7 @@ class ArgumentSchema:
                  type: str = "object",
                  properties: dict[str, Property] = None,
                  required: list[str] = None,
+                 **kwargs,
                  ):
         self.type = type
         self.properties = properties
@@ -66,6 +68,7 @@ class ToolDef:
                  instructions: str = "",
                  type: str = "",
                  metaData: dict[str, str] = None,
+                 **kwargs,
                  ):
         self.name = name
         self.description = description
@@ -111,6 +114,7 @@ class ToolReference:
                  reference: str = "",
                  arg: str = "",
                  toolID: str = "",
+                 **kwargs,
                  ):
         self.named = named
         self.reference = reference
@@ -128,6 +132,7 @@ class Repo:
                  Path: str = "",
                  Name: str = "",
                  Revision: str = "",
+                 **kwargs,
                  ):
         self.VCS = VCS
         self.Root = Root
@@ -141,6 +146,7 @@ class SourceRef:
                  location: str = "",
                  lineNo: int = 0,
                  repo: Repo = None,
+                 **kwargs,
                  ):
         self.location = location
         self.lineNo = lineNo
@@ -186,6 +192,7 @@ class Tool(ToolDef):
                  localTools: dict[str, str] = None,
                  source: SourceRef = None,
                  workingDir: str = "",
+                 **kwargs,
                  ):
         super().__init__(name, description, maxTokens, modelName, modelProvider, jsonResponse, temperature, cache, chat,
                          internalPrompt, arguments, tools, globalTools, globalModelName, context, exportContext, export,
