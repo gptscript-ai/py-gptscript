@@ -181,7 +181,12 @@ exit $env:EXIT_CODE
     ]
 
     run = gptscript.evaluate(tools, Options(disableCache=True, env=["EXIT_CODE=1"]))
-    await run.text()
+
+    try:
+        await run.text()
+        assert False, "Expected run to fail"
+    except:
+        pass
 
     assert run.state() == RunState.Error, "Unexpected run state after exit 1"
 
@@ -697,7 +702,10 @@ async def test_prompt_without_prompt_allowed(gptscript):
         event_handlers=[process_event],
     )
 
-    out = await run.text()
+    try:
+        out = await run.text()
+    except Exception as e:
+        out = str(e)
 
     assert not prompt_event_found, "Prompt event occurred"
     assert "prompt event occurred" in out, "Unexpected output: " + out

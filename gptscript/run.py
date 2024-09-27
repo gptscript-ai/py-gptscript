@@ -62,7 +62,9 @@ class Run:
         finally:
             self._task = None
 
-        return f"run encountered an error: {self._err} with error output: {self._errput}" if self._err != "" else self._output
+        if self._err != "":
+            raise Exception(f"run encountered an error: {self._err} with error output: {self._errput}")
+        return self._output
 
     def err(self):
         return self._err
