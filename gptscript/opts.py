@@ -1,5 +1,5 @@
 import os
-from typing import Mapping, Self
+from typing import Self
 
 
 class GlobalOptions:
@@ -12,7 +12,7 @@ class GlobalOptions:
             defaultModelProvider: str = "",
             defaultModel: str = "",
             cacheDir: str = "",
-            env: Mapping[str, str] = None,
+            env: list[str] = None,
     ):
         self.URL = url
         self.Token = token
@@ -22,9 +22,10 @@ class GlobalOptions:
         self.DefaultModelProvider = defaultModelProvider
         self.CacheDir = cacheDir
         if env is None:
-            env = os.environ
-        env_list = [f"{k}={v}" for k, v in env.items()]
-        self.Env = env_list
+            env = [f"{k}={v}" for k, v in os.environ.items()]
+        elif isinstance(env, dict):
+            env = [f"{k}={v}" for k, v in env.items()]
+        self.Env = env
 
     def merge(self, other: Self) -> Self:
         cp = self.__class__()
@@ -37,7 +38,8 @@ class GlobalOptions:
         cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
         cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
         cp.CacheDir = other.CacheDir if other.CacheDir != "" else self.CacheDir
-        cp.Env = (other.Env or []).extend(self.Env or [])
+        cp.Env = (other.Env or [])
+        cp.Env.extend(self.Env or [])
         return cp
 
     def toEnv(self):
@@ -76,7 +78,7 @@ class Options(GlobalOptions):
                  defaultModel: str = "",
                  cacheDir: str = "",
                  ):
-        super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir)
+        super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir, env)
         self.input = input
         self.disableCache = disableCache
         self.subTool = subTool
@@ -87,7 +89,6 @@ class Options(GlobalOptions):
         self.credentialOverrides = credentialOverrides
         self.credentialContexts = credentialContexts
         self.location = location
-        self.env = env
         self.forceSequential = forceSequential
 
     def merge_global_opts(self, other: GlobalOptions) -> Self:
@@ -104,6 +105,5 @@ class Options(GlobalOptions):
         cp.credentialOverrides = self.credentialOverrides
         cp.credentialContexts = self.credentialContexts
         cp.location = self.location
-        cp.env = self.env
         cp.forceSequential = self.forceSequential
         return cp
