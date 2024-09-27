@@ -53,8 +53,12 @@ class GPTScript:
         if not (self.opts.URL.startswith("http://") or self.opts.URL.startswith("https://")):
             self.opts.URL = f"http://{self.opts.URL}"
 
+        self.opts.Env.append("GPTSCRIPT_URL=" + self.opts.URL)
+
         if self.opts.Token == "":
             self.opts.Token = os.environ.get("GPTSCRIPT_TOKEN", "")
+        if self.opts.Token != "":
+            self.opts.Env.append("GPTSCRIPT_TOKEN=" + self.opts.Token)
 
     def close(self):
         GPTScript.__gptscript_count -= 1
