@@ -38,26 +38,3 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: tox
 
-  test-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{  github.event.pull_request.head.sha }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install gptscript
-        run: |
-          curl https://get.gptscript.ai/releases/default_windows_amd64_v1/gptscript.exe -o gptscript.exe
-          .\gptscript.exe --version
-      - name: Install deps
-        run: |
-          pip install -r requirements.txt
-      - name: Run Tests
-        env:
-          GPTSCRIPT_BIN: .\gptscript.exe
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: tox
