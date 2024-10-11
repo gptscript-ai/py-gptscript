@@ -12,7 +12,7 @@ class GlobalOptions:
             defaultModelProvider: str = "",
             defaultModel: str = "",
             cacheDir: str = "",
-            datasetToolRepo: str = "github.com/gptscript-ai/datasets",
+            datasetToolRepo: str = "",
             env: list[str] = None,
     ):
         self.URL = url
@@ -80,7 +80,7 @@ class Options(GlobalOptions):
                  defaultModelProvider: str = "",
                  defaultModel: str = "",
                  cacheDir: str = "",
-                 datasetToolDir: str = "github.com/gptscript-ai/datasets",
+                 datasetToolDir: str = "",
                  ):
         super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir, datasetToolDir, env)
         self.input = input
