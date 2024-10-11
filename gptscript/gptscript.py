@@ -7,6 +7,7 @@ from typing import Any, Callable, Awaitable, List
 
 from gptscript.confirm import AuthResponse
 from gptscript.credentials import Credential, to_credential
+from gptscript.datasets import DatasetMeta, Dataset, DatasetElementMeta, DatasetElement
 from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
@@ -209,6 +210,86 @@ class GPTScript:
             "credentials/delete",
             {"context": [context], "name": name}
         )
+
+    async def list_datasets(self, workspace: str) -> List[DatasetMeta]:
+        if workspace == "":
+            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+
+        res = await self._run_basic_command(
+            "datasets",
+            {"input": "{}", "workspace": workspace, "datasetToolRepo": self.opts.DatasetToolRepo}
+        )
+        return [DatasetMeta.model_validate(d) for d in json.loads(res)]
+
+    async def create_dataset(self, workspace: str, name: str, description: str = "") -> Dataset:
+        if workspace == "":
+            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+
+        if name == "":
+            raise ValueError("name cannot be empty")
+
+        res = await self._run_basic_command(
+            "datasets/create",
+            {"input": json.dumps({"datasetName": name, "datasetDescription": description}),
+             "workspace": workspace,
+             "datasetToolRepo": self.opts.DatasetToolRepo}
+        )
+        return Dataset.model_validate_json(res)
+
+    async def add_dataset_element(self, workspace: str, datasetID: str, elementName: str, elementContent: str,
+                                  elementDescription: str = "") -> DatasetElementMeta:
+        if workspace == "":
+            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+
+        if datasetID == "":
+            raise ValueError("datasetID cannot be empty")
+        elif elementName == "":
+            raise ValueError("elementName cannot be empty")
+        elif elementContent == "":
+            raise ValueError("elementContent cannot be empty")
+
+        res = await self._run_basic_command(
+            "datasets/add-element",
+            {"input": json.dumps({"datasetID": datasetID,
+                                  "elementName": elementName,
+                                  "elementContent": elementContent,
+                                  "elementDescription": elementDescription}),
+             "workspace": workspace,
+             "datasetToolRepo": self.opts.DatasetToolRepo}
+        )
+        return DatasetElementMeta.model_validate_json(res)
+
+    async def list_dataset_elements(self, workspace: str, datasetID: str) -> List[DatasetElementMeta]:
+        if workspace == "":
+            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+
+        if datasetID == "":
+            raise ValueError("datasetID cannot be empty")
+
+        res = await self._run_basic_command(
+            "datasets/list-elements",
+            {"input": json.dumps({"datasetID": datasetID}),
+             "workspace": workspace,
+             "datasetToolRepo": self.opts.DatasetToolRepo}
+        )
+        return [DatasetElementMeta.model_validate(d) for d in json.loads(res)]
+
+    async def get_dataset_element(self, workspace: str, datasetID: str, elementName: str) -> DatasetElement:
+        if workspace == "":
+            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+
+        if datasetID == "":
+            raise ValueError("datasetID cannot be empty")
+        elif elementName == "":
+            raise ValueError("elementName cannot be empty")
+
+        res = await self._run_basic_command(
+            "datasets/get-element",
+            {"input": json.dumps({"datasetID": datasetID, "element": elementName}),
+             "workspace": workspace,
+             "datasetToolRepo": self.opts.DatasetToolRepo}
+        )
+        return DatasetElement.model_validate_json(res)
 
 
 def _get_command():

@@ -12,6 +12,7 @@ class GlobalOptions:
             defaultModelProvider: str = "",
             defaultModel: str = "",
             cacheDir: str = "",
+            datasetToolRepo: str = "github.com/gptscript-ai/datasets",
             env: list[str] = None,
     ):
         self.URL = url
@@ -21,6 +22,7 @@ class GlobalOptions:
         self.DefaultModel = defaultModel
         self.DefaultModelProvider = defaultModelProvider
         self.CacheDir = cacheDir
+        self.DatasetToolRepo = datasetToolRepo
         if env is None:
             env = [f"{k}={v}" for k, v in os.environ.items()]
         elif isinstance(env, dict):
@@ -38,6 +40,7 @@ class GlobalOptions:
         cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
         cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
         cp.CacheDir = other.CacheDir if other.CacheDir != "" else self.CacheDir
+        cp.DatasetToolRepo = other.DatasetToolRepo if other.DatasetToolRepo != "" else self.DatasetToolRepo
         cp.Env = (other.Env or [])
         cp.Env.extend(self.Env or [])
         return cp
@@ -77,8 +80,9 @@ class Options(GlobalOptions):
                  defaultModelProvider: str = "",
                  defaultModel: str = "",
                  cacheDir: str = "",
+                 datasetToolDir: str = "github.com/gptscript-ai/datasets",
                  ):
-        super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir, env)
+        super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir, datasetToolDir, env)
         self.input = input
         self.disableCache = disableCache
         self.subTool = subTool

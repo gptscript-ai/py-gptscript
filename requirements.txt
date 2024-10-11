@@ -11,3 +11,4 @@ twine==5.0.0
 build==1.1.1
 httpx==0.27.0
 pywin32==306; sys_platform == 'win32'
+pydantic==2.9.2
