@@ -212,35 +212,39 @@ class GPTScript:
             {"context": [context], "name": name}
         )
 
-    async def list_datasets(self, workspace: str) -> List[DatasetMeta]:
-        if workspace == "":
-            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+    async def list_datasets(self, workspace_id: str) -> List[DatasetMeta]:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
 
         res = await self._run_basic_command(
             "datasets",
-            {"input": "{}", "workspace": workspace, "datasetToolRepo": self.opts.DatasetToolRepo}
+            {"input": "{}", "workspaceID": workspace_id, "datasetToolRepo": self.opts.DatasetToolRepo,
+             "env": self.opts.Env}
         )
         return [DatasetMeta.model_validate(d) for d in json.loads(res)]
 
-    async def create_dataset(self, workspace: str, name: str, description: str = "") -> Dataset:
-        if workspace == "":
-            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+    async def create_dataset(self, workspace_id: str, name: str, description: str = "") -> Dataset:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
 
         if name == "":
             raise ValueError("name cannot be empty")
 
         res = await self._run_basic_command(
             "datasets/create",
-            {"input": json.dumps({"datasetName": name, "datasetDescription": description}),
-             "workspace": workspace,
-             "datasetToolRepo": self.opts.DatasetToolRepo}
+            {
+                "input": json.dumps({"datasetName": name, "datasetDescription": description}),
+                "workspaceID": workspace_id,
+                "datasetToolRepo": self.opts.DatasetToolRepo,
+                "env": self.opts.Env,
+            }
         )
         return Dataset.model_validate_json(res)
 
-    async def add_dataset_element(self, workspace: str, datasetID: str, elementName: str, elementContent: str,
+    async def add_dataset_element(self, workspace_id: str, datasetID: str, elementName: str, elementContent: str,
                                   elementDescription: str = "") -> DatasetElementMeta:
-        if workspace == "":
-            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
 
         if datasetID == "":
             raise ValueError("datasetID cannot be empty")
@@ -251,33 +255,41 @@ class GPTScript:
 
         res = await self._run_basic_command(
             "datasets/add-element",
-            {"input": json.dumps({"datasetID": datasetID,
-                                  "elementName": elementName,
-                                  "elementContent": elementContent,
-                                  "elementDescription": elementDescription}),
-             "workspace": workspace,
-             "datasetToolRepo": self.opts.DatasetToolRepo}
+            {
+                "input": json.dumps({
+                    "datasetID": datasetID,
+                    "elementName": elementName,
+                    "elementContent": elementContent,
+                    "elementDescription": elementDescription,
+                }),
+                "workspaceID": workspace_id,
+                "datasetToolRepo": self.opts.DatasetToolRepo,
+                "env": self.opts.Env
+            }
         )
         return DatasetElementMeta.model_validate_json(res)
 
-    async def list_dataset_elements(self, workspace: str, datasetID: str) -> List[DatasetElementMeta]:
-        if workspace == "":
-            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+    async def list_dataset_elements(self, workspace_id: str, datasetID: str) -> List[DatasetElementMeta]:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
 
         if datasetID == "":
             raise ValueError("datasetID cannot be empty")
 
         res = await self._run_basic_command(
             "datasets/list-elements",
-            {"input": json.dumps({"datasetID": datasetID}),
-             "workspace": workspace,
-             "datasetToolRepo": self.opts.DatasetToolRepo}
+            {
+                "input": json.dumps({"datasetID": datasetID}),
+                "workspaceID": workspace_id,
+                "datasetToolRepo": self.opts.DatasetToolRepo,
+                "env": self.opts.Env
+            }
         )
         return [DatasetElementMeta.model_validate(d) for d in json.loads(res)]
 
-    async def get_dataset_element(self, workspace: str, datasetID: str, elementName: str) -> DatasetElement:
-        if workspace == "":
-            workspace = os.environ["GPTSCRIPT_WORKSPACE_DIR"]
+    async def get_dataset_element(self, workspace_id: str, datasetID: str, elementName: str) -> DatasetElement:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
 
         if datasetID == "":
             raise ValueError("datasetID cannot be empty")
@@ -286,9 +298,12 @@ class GPTScript:
 
         res = await self._run_basic_command(
             "datasets/get-element",
-            {"input": json.dumps({"datasetID": datasetID, "element": elementName}),
-             "workspace": workspace,
-             "datasetToolRepo": self.opts.DatasetToolRepo}
+            {
+                "input": json.dumps({"datasetID": datasetID, "element": elementName}),
+                "workspaceID": workspace_id,
+                "datasetToolRepo": self.opts.DatasetToolRepo,
+                "env": self.opts.Env,
+            }
         )
         return DatasetElement.model_validate_json(res)
 
