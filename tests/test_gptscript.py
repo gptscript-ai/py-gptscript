@@ -757,6 +757,7 @@ async def test_credentials(gptscript):
     res = await gptscript.delete_credential(name=name)
     assert not res.startswith("an error occurred"), "Unexpected error deleting credential: " + res
 
+
 @pytest.mark.asyncio
 async def test_datasets(gptscript):
     with tempfile.TemporaryDirectory(prefix="py-gptscript_") as tempdir:
@@ -770,7 +771,8 @@ async def test_datasets(gptscript):
         assert len(dataset.elements) == 0, "Expected dataset elements to be empty"
 
         # Add an element
-        element_meta = await gptscript.add_dataset_element(tempdir, dataset.id, "element1", "element1 contents", "element1 description")
+        element_meta = await gptscript.add_dataset_element(tempdir, dataset.id, "element1", "element1 contents",
+                                                           "element1 description")
         assert element_meta.name == "element1", "Expected element name to match"
         assert element_meta.description == "element1 description", "Expected element description to match"
 
@@ -792,3 +794,93 @@ async def test_datasets(gptscript):
         assert datasets[0].id == dataset.id, "Expected dataset id to match"
         assert datasets[0].name == dataset_name, "Expected dataset name to match"
         assert datasets[0].description == "this is a test dataset", "Expected dataset description to match"
+
+
+@pytest.mark.asyncio
+async def test_create_and_delete_workspace(gptscript):
+    workspace_id = await gptscript.create_workspace("directory")
+    assert workspace_id != "" and workspace_id.startswith("directory://"), "Expected workspace id to be set"
+    await gptscript.delete_workspace(workspace_id)
+
+
+@pytest.mark.asyncio
+async def test_create_read_and_delete_file_in_workspace(gptscript):
+    workspace_id = await gptscript.create_workspace("directory")
+    await gptscript.write_file_in_workspace("test.txt", b"test", workspace_id)
+    contents = await gptscript.read_file_in_workspace("test.txt", workspace_id)
+    assert contents == b"test"
+    await gptscript.delete_file_in_workspace("test.txt", workspace_id)
+    await gptscript.delete_workspace(workspace_id)
+
+
+@pytest.mark.asyncio
+async def test_ls_complex_workspace(gptscript):
+    workspace_id = await gptscript.create_workspace("directory")
+    await gptscript.write_file_in_workspace("test/test1.txt", b"hello1", workspace_id)
+    await gptscript.write_file_in_workspace("test1/test2.txt", b"hello2", workspace_id)
+    await gptscript.write_file_in_workspace("test1/test3.txt", b"hello3", workspace_id)
+    await gptscript.write_file_in_workspace(".hidden.txt", b"hidden", workspace_id)
+
+    files = await gptscript.list_files_in_workspace(workspace_id)
+    assert len(files) == 4
+
+    files = await gptscript.list_files_in_workspace(workspace_id, prefix="test1")
+    assert len(files) == 2
+
+    await gptscript.remove_all(workspace_id, with_prefix="test1")
+
+    files = await gptscript.list_files_in_workspace(workspace_id)
+    assert len(files) == 2
+
+    await gptscript.delete_workspace(workspace_id)
+
+
+@pytest.mark.skipif(
+    os.environ.get("AWS_ACCESS_KEY_ID") is None or os.environ.get("AWS_SECRET_ACCESS_KEY") is None,
+    reason="AWS credentials not set",
+)
+@pytest.mark.asyncio
+async def test_create_and_delete_workspace_s3(gptscript):
+    workspace_id = await gptscript.create_workspace("s3")
+    assert workspace_id != "" and workspace_id.startswith("s3://"), "Expected workspace id to be set"
+    await gptscript.delete_workspace(workspace_id)
+
+
+@pytest.mark.skipif(
+    os.environ.get("AWS_ACCESS_KEY_ID") is None or os.environ.get("AWS_SECRET_ACCESS_KEY") is None,
+    reason="AWS credentials not set",
+)
+@pytest.mark.asyncio
+async def test_create_read_and_delete_file_in_workspaces3(gptscript):
+    workspace_id = await gptscript.create_workspace("s3")
+    await gptscript.write_file_in_workspace("test.txt", b"test", workspace_id)
+    contents = await gptscript.read_file_in_workspace("test.txt", workspace_id)
+    assert contents == b"test"
+    await gptscript.delete_file_in_workspace("test.txt", workspace_id)
+    await gptscript.delete_workspace(workspace_id)
+
+
+@pytest.mark.skipif(
+    os.environ.get("AWS_ACCESS_KEY_ID") is None or os.environ.get("AWS_SECRET_ACCESS_KEY") is None,
+    reason="AWS credentials not set",
+)
+@pytest.mark.asyncio
+async def test_ls_complex_workspace_s3(gptscript):
+    workspace_id = await gptscript.create_workspace("s3")
+    await gptscript.write_file_in_workspace("test/test1.txt", b"hello1", workspace_id)
+    await gptscript.write_file_in_workspace("test1/test2.txt", b"hello2", workspace_id)
+    await gptscript.write_file_in_workspace("test1/test3.txt", b"hello3", workspace_id)
+    await gptscript.write_file_in_workspace(".hidden.txt", b"hidden", workspace_id)
+
+    files = await gptscript.list_files_in_workspace(workspace_id)
+    assert len(files) == 4
+
+    files = await gptscript.list_files_in_workspace(workspace_id, prefix="test1")
+    assert len(files) == 2
+
+    await gptscript.remove_all(workspace_id, with_prefix="test1")
+
+    files = await gptscript.list_files_in_workspace(workspace_id)
+    assert len(files) == 2
+
+    await gptscript.delete_workspace(workspace_id)

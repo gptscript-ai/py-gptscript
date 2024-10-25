@@ -13,6 +13,7 @@ class GlobalOptions:
             defaultModel: str = "",
             cacheDir: str = "",
             datasetToolRepo: str = "",
+            workspaceTool: str = "",
             env: list[str] = None,
     ):
         self.URL = url
@@ -23,6 +24,7 @@ class GlobalOptions:
         self.DefaultModelProvider = defaultModelProvider
         self.CacheDir = cacheDir
         self.DatasetToolRepo = datasetToolRepo
+        self.WorkspaceTool = workspaceTool
         if env is None:
             env = [f"{k}={v}" for k, v in os.environ.items()]
         elif isinstance(env, dict):
@@ -41,6 +43,7 @@ class GlobalOptions:
         cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
         cp.CacheDir = other.CacheDir if other.CacheDir != "" else self.CacheDir
         cp.DatasetToolRepo = other.DatasetToolRepo if other.DatasetToolRepo != "" else self.DatasetToolRepo
+        cp.WorkspaceTool = other.WorkspaceTool if other.WorkspaceTool != "" else self.WorkspaceTool
         cp.Env = (other.Env or [])
         cp.Env.extend(self.Env or [])
         return cp
@@ -81,8 +84,10 @@ class Options(GlobalOptions):
                  defaultModel: str = "",
                  cacheDir: str = "",
                  datasetToolDir: str = "",
+                 workspaceTool: str = "",
                  ):
-        super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir, datasetToolDir, env)
+        super().__init__(url, token, apiKey, baseURL, defaultModelProvider, defaultModel, cacheDir, datasetToolDir,
+                         workspaceTool, env)
         self.input = input
         self.disableCache = disableCache
         self.subTool = subTool

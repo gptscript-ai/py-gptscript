@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import platform
@@ -290,6 +291,101 @@ class GPTScript:
              "datasetToolRepo": self.opts.DatasetToolRepo}
         )
         return DatasetElement.model_validate_json(res)
+
+    async def create_workspace(self, provider_type: str, from_workspaces: list[str] = None) -> str:
+        return await self._run_basic_command(
+            "workspaces/create",
+            {
+                "providerType": provider_type,
+                "fromWorkspaces": from_workspaces,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        )
+
+    async def delete_workspace(self, workspace_id: str = ""):
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        await self._run_basic_command(
+            "workspaces/delete",
+            {
+                "id": workspace_id,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        )
+
+    async def list_files_in_workspace(self, workspace_id: str = "", prefix: str = "") -> List[str]:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        return json.loads(await self._run_basic_command(
+            "workspaces/list",
+            {
+                "id": workspace_id,
+                "prefix": prefix,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        ))
+
+    async def remove_all(self, workspace_id: str = "", with_prefix: str = ""):
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        await self._run_basic_command(
+            "workspaces/remove-all-with-prefix",
+            {
+                "id": workspace_id,
+                "prefix": with_prefix,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        )
+
+    async def write_file_in_workspace(self, file_path: str, contents: bytes, workspace_id: str = ""):
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        await self._run_basic_command(
+            "workspaces/write-file",
+            {
+                "id": workspace_id,
+                "filePath": file_path,
+                "contents": base64.b64encode(contents).decode("utf-8") if contents is not None else None,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        )
+
+    async def delete_file_in_workspace(self, file_path: str, workspace_id: str = ""):
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        await self._run_basic_command(
+            "workspaces/delete-file",
+            {
+                "id": workspace_id,
+                "filePath": file_path,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        )
+
+    async def read_file_in_workspace(self, file_path: str, workspace_id: str = "") -> bytes:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        return base64.b64decode(await self._run_basic_command(
+            "workspaces/read-file",
+            {
+                "id": workspace_id,
+                "filePath": file_path,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        ))
 
 
 def _get_command():
