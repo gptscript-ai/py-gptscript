@@ -110,8 +110,8 @@ from gptscript.gptscript import GPTScript
 
 async def list_models():
     gptscript = GPTScript()
-    tools = await gptscript.list_models()
-    print(tools)
+    models = await gptscript.list_models()
+    print(models)
     gptscript.close()
 ```
 
