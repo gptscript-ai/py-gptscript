@@ -810,6 +810,17 @@ async def test_create_read_and_delete_file_in_workspace(gptscript):
     await gptscript.write_file_in_workspace("test.txt", b"test", workspace_id)
     contents = await gptscript.read_file_in_workspace("test.txt", workspace_id)
     assert contents == b"test"
+
+    file_info = await gptscript.stat_file_in_workspace("test.txt", workspace_id)
+    assert file_info.name == "test.txt"
+    assert file_info.size == 4
+    assert file_info.modTime.hour == datetime.now(
+        tz=file_info.modTime.tzinfo,
+    ).hour and file_info.modTime < datetime.now(
+        tz=file_info.modTime.tzinfo,
+    )
+
+    assert file_info.workspaceID == workspace_id
     await gptscript.delete_file_in_workspace("test.txt", workspace_id)
     await gptscript.delete_workspace(workspace_id)
 
@@ -857,6 +868,16 @@ async def test_create_read_and_delete_file_in_workspaces3(gptscript):
     await gptscript.write_file_in_workspace("test.txt", b"test", workspace_id)
     contents = await gptscript.read_file_in_workspace("test.txt", workspace_id)
     assert contents == b"test"
+
+    file_info = await gptscript.stat_file_in_workspace("test.txt", workspace_id)
+    assert file_info.name == "test.txt"
+    assert file_info.size == 4
+    assert file_info.modTime.hour == datetime.now(
+        tz=file_info.modTime.tzinfo,
+    ).hour and file_info.modTime < datetime.now(
+        tz=file_info.modTime.tzinfo,
+    )
+
     await gptscript.delete_file_in_workspace("test.txt", workspace_id)
     await gptscript.delete_workspace(workspace_id)
 

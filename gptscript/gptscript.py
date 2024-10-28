@@ -9,6 +9,7 @@ from typing import Any, Callable, Awaitable, List
 from gptscript.confirm import AuthResponse
 from gptscript.credentials import Credential, to_credential
 from gptscript.datasets import DatasetMeta, Dataset, DatasetElementMeta, DatasetElement
+from gptscript.fileinfo import FileInfo
 from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
@@ -394,6 +395,20 @@ class GPTScript:
 
         return base64.b64decode(await self._run_basic_command(
             "workspaces/read-file",
+            {
+                "id": workspace_id,
+                "filePath": file_path,
+                "workspaceTool": self.opts.WorkspaceTool,
+                "env": self.opts.Env,
+            }
+        ))
+
+    async def stat_file_in_workspace(self, file_path: str, workspace_id: str = "") -> FileInfo:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        return FileInfo.model_validate_json(await self._run_basic_command(
+            "workspaces/stat-file",
             {
                 "id": workspace_id,
                 "filePath": file_path,
