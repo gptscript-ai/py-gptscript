@@ -40,7 +40,7 @@ def gptscript():
 
 
 # Simple tool for testing
-@pytest.fixture
+@pytest.fixture(scope="function")
 def simple_tool():
     return ToolDef(
         instructions="What is the capital of the united states?"
@@ -48,7 +48,7 @@ def simple_tool():
 
 
 # Complex tool for testing
-@pytest.fixture
+@pytest.fixture(scope="function")
 def complex_tool():
     return ToolDef(
         jsonResponse=True,
@@ -68,7 +68,7 @@ the response should be in JSON and match the format:
 
 
 # Fixture for a list of tools
-@pytest.fixture
+@pytest.fixture(scope="function")
 def tool_list():
     shebang = "#!/bin/bash"
     if platform.system().lower() == "windows":

@@ -318,9 +318,9 @@ class GPTScript:
             }
         )
 
-    async def delete_workspace(self, workspace_id: str = ""):
+    async def delete_workspace(self, workspace_id: str):
         if workspace_id == "":
-            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+            raise ValueError("workspace_id cannot be empty")
 
         await self._run_basic_command(
             "workspaces/delete",
