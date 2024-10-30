@@ -11,6 +11,7 @@ import pytest
 
 from gptscript.confirm import AuthResponse
 from gptscript.credentials import Credential
+from gptscript.datasets import DatasetElement
 from gptscript.exec_utils import get_env
 from gptscript.frame import RunEventType, CallFrame, RunFrame, RunState, PromptFrame
 from gptscript.gptscript import GPTScript
@@ -775,17 +776,35 @@ async def test_datasets(gptscript):
     assert element_meta.name == "element1", "Expected element name to match"
     assert element_meta.description == "element1 description", "Expected element description to match"
 
-    # Get the element
-    element = await gptscript.get_dataset_element(workspace_id, dataset.id, "element1")
-    assert element.name == "element1", "Expected element name to match"
-    assert element.contents == "element1 contents", "Expected element contents to match"
-    assert element.description == "element1 description", "Expected element description to match"
+    # Add two more elements
+    await gptscript.add_dataset_elements(workspace_id, dataset.id, [
+        DatasetElement(name="element2", contents="element2 contents", description="element2 description"),
+        DatasetElement(name="element3", contents="element3 contents", description="element3 description"),
+    ])
+
+    # Get the elements
+    e1 = await gptscript.get_dataset_element(workspace_id, dataset.id, "element1")
+    assert e1.name == "element1", "Expected element name to match"
+    assert e1.contents == "element1 contents", "Expected element contents to match"
+    assert e1.description == "element1 description", "Expected element description to match"
+    e2 = await gptscript.get_dataset_element(workspace_id, dataset.id, "element2")
+    assert e2.name == "element2", "Expected element name to match"
+    assert e2.contents == "element2 contents", "Expected element contents to match"
+    assert e2.description == "element2 description", "Expected element description to match"
+    e3 = await gptscript.get_dataset_element(workspace_id, dataset.id, "element3")
+    assert e3.name == "element3", "Expected element name to match"
+    assert e3.contents == "element3 contents", "Expected element contents to match"
+    assert e3.description == "element3 description", "Expected element description to match"
 
     # List elements in the dataset
     elements = await gptscript.list_dataset_elements(workspace_id, dataset.id)
-    assert len(elements) == 1, "Expected one element in the dataset"
+    assert len(elements) == 3, "Expected one element in the dataset"
     assert elements[0].name == "element1", "Expected element name to match"
     assert elements[0].description == "element1 description", "Expected element description to match"
+    assert elements[1].name == "element2", "Expected element name to match"
+    assert elements[1].description == "element2 description", "Expected element description to match"
+    assert elements[2].name == "element3", "Expected element name to match"
+    assert elements[2].description == "element3 description", "Expected element description to match"
 
     # List datasets
     datasets = await gptscript.list_datasets(workspace_id)
