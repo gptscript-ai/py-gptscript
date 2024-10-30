@@ -270,6 +270,30 @@ class GPTScript:
         )
         return DatasetElementMeta.model_validate_json(res)
 
+    async def add_dataset_elements(self, workspace_id: str, datasetID: str, elements: List[DatasetElement]) -> str:
+        if workspace_id == "":
+            workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
+
+        if datasetID == "":
+            raise ValueError("datasetID cannot be empty")
+        elif not elements:
+            raise ValueError("elements cannot be empty")
+
+        res = await self._run_basic_command(
+            "datasets/add-elements",
+            {
+                "input": json.dumps({
+                    "datasetID": datasetID,
+                    "elements": [element.model_dump() for element in elements],
+                }),
+                "workspaceID": workspace_id,
+                "datasetToolRepo": self.opts.DatasetToolRepo,
+                "env": self.opts.Env
+            }
+        )
+        return res
+
+
     async def list_dataset_elements(self, workspace_id: str, datasetID: str) -> List[DatasetElementMeta]:
         if workspace_id == "":
             workspace_id = os.environ["GPTSCRIPT_WORKSPACE_ID"]
