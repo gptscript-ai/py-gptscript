@@ -4,7 +4,7 @@ from typing import Union, Any, Self, Callable, Awaitable
 
 import httpx
 
-from gptscript.frame import PromptFrame, RunFrame, CallFrame, RunState, RunEventType, Program
+from gptscript.frame import PromptFrame, RunFrame, CallFrame, RunState, RunEventType, Program, ToolCategory
 from gptscript.opts import Options
 from gptscript.tool import ToolDef, Tool
 
@@ -179,7 +179,7 @@ class Run:
                             if self._calls is None:
                                 self._calls = {}
                             self._calls[event.id] = event
-                            if event.parentID == "" and self._parentCallID == "":
+                            if event.parentID == "" and self._parentCallID == "" and event.toolCategory != ToolCategory.none:
                                 self._parentCallID = event.id
                         if self.event_handlers is not None:
                             for event_handler in self.event_handlers:
