@@ -12,7 +12,7 @@ class GlobalOptions:
             defaultModelProvider: str = "",
             defaultModel: str = "",
             cacheDir: str = "",
-            datasetToolRepo: str = "",
+            datasetTool: str = "",
             workspaceTool: str = "",
             env: list[str] = None,
     ):
@@ -23,7 +23,7 @@ class GlobalOptions:
         self.DefaultModel = defaultModel
         self.DefaultModelProvider = defaultModelProvider
         self.CacheDir = cacheDir
-        self.DatasetToolRepo = datasetToolRepo
+        self.DatasetTool = datasetTool
         self.WorkspaceTool = workspaceTool
         if env is None:
             env = [f"{k}={v}" for k, v in os.environ.items()]
@@ -42,7 +42,7 @@ class GlobalOptions:
         cp.DefaultModel = other.DefaultModel if other.DefaultModel != "" else self.DefaultModel
         cp.DefaultModelProvider = other.DefaultModelProvider if other.DefaultModelProvider != "" else self.DefaultModelProvider
         cp.CacheDir = other.CacheDir if other.CacheDir != "" else self.CacheDir
-        cp.DatasetToolRepo = other.DatasetToolRepo if other.DatasetToolRepo != "" else self.DatasetToolRepo
+        cp.DatasetTool = other.DatasetTool if other.DatasetTool != "" else self.DatasetTool
         cp.WorkspaceTool = other.WorkspaceTool if other.WorkspaceTool != "" else self.WorkspaceTool
         cp.Env = (other.Env or [])
         cp.Env.extend(self.Env or [])
