@@ -8,7 +8,7 @@ from typing import Any, Callable, Awaitable, List
 
 from gptscript.confirm import AuthResponse
 from gptscript.credentials import Credential, to_credential
-from gptscript.datasets import DatasetElementMeta, DatasetElement
+from gptscript.datasets import DatasetElementMeta, DatasetElement, DatasetMeta
 from gptscript.fileinfo import FileInfo
 from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
 from gptscript.opts import GlobalOptions
@@ -214,18 +214,24 @@ class GPTScript:
         )
 
     # list_datasets returns an array of dataset IDs
-    async def list_datasets(self) -> List[str]:
+    async def list_datasets(self) -> List[DatasetMeta]:
         res = await self._run_basic_command(
             "datasets",
             {
-                "input": json.dumps({"workspaceID": os.getenv("GPTSCRIPT_WORKSPACE_ID")}),
+                "input": "{}",
                 "datasetTool": self.opts.DatasetTool,
                 "env": self.opts.Env
             }
         )
-        return json.loads(res)
+        return [DatasetMeta.model_validate(d) for d in json.loads(res)]
 
-    async def add_dataset_elements(self, elements: List[DatasetElement], datasetID: str = "") -> str:
+    async def add_dataset_elements(
+            self,
+            elements: List[DatasetElement],
+            datasetID: str = "",
+            name: str = "",
+            description: str = ""
+    ) -> str:
         if not elements:
             raise ValueError("elements cannot be empty")
 
@@ -233,8 +239,9 @@ class GPTScript:
             "datasets/add-elements",
             {
                 "input": json.dumps({
-                    "workspaceID": os.getenv("GPTSCRIPT_WORKSPACE_ID"),
                     "datasetID": datasetID,
+                    "name": name,
+                    "description": description,
                     "elements": [element.model_dump() for element in elements],
                 }),
                 "datasetTool": self.opts.DatasetTool,
@@ -250,10 +257,7 @@ class GPTScript:
         res = await self._run_basic_command(
             "datasets/list-elements",
             {
-                "input": json.dumps({
-                    "workspaceID": os.getenv("GPTSCRIPT_WORKSPACE_ID"),
-                    "datasetID": datasetID,
-                }),
+                "input": json.dumps({"datasetID": datasetID}),
                 "datasetTool": self.opts.DatasetTool,
                 "env": self.opts.Env
             }
@@ -270,7 +274,6 @@ class GPTScript:
             "datasets/get-element",
             {
                 "input": json.dumps({
-                    "workspaceID": os.getenv("GPTSCRIPT_WORKSPACE_ID"),
                     "datasetID": datasetID,
                     "name": elementName,
                 }),

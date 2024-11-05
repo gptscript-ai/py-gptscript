@@ -2,6 +2,12 @@ import base64
 from pydantic import BaseModel, field_serializer, field_validator, BeforeValidator
 
 
+class DatasetMeta(BaseModel):
+    id: str
+    name: str
+    description: str
+
+
 class DatasetElementMeta(BaseModel):
     name: str
     description: str
