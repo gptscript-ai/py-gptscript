@@ -760,11 +760,11 @@ async def test_credentials(gptscript):
 
 @pytest.mark.asyncio
 async def test_datasets(gptscript):
-    workspace_id = await gptscript.create_workspace("directory")
+    os.environ["GPTSCRIPT_WORKSPACE_ID"] = await gptscript.create_workspace("directory")
 
     new_client = GPTScript(GlobalOptions(
         apiKey=os.getenv("OPENAI_API_KEY"),
-        env=[f"GPTSCRIPT_WORKSPACE_ID={workspace_id}"],
+        env=[f"{k}={v}" for k, v in os.environ.items()],
     ))
 
     # Create dataset
@@ -812,7 +812,7 @@ async def test_datasets(gptscript):
     assert datasets[0].name == "test-dataset", "Expected dataset name to match"
     assert datasets[0].description == "test dataset description", "Expected dataset description to match"
 
-    await gptscript.delete_workspace(workspace_id)
+    await gptscript.delete_workspace(os.environ["GPTSCRIPT_WORKSPACE_ID"])
 
 
 @pytest.mark.asyncio
