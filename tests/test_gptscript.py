@@ -760,60 +760,59 @@ async def test_credentials(gptscript):
 
 @pytest.mark.asyncio
 async def test_datasets(gptscript):
-    workspace_id = await gptscript.create_workspace("directory")
-    dataset_name = str(os.urandom(8).hex())
+    os.environ["GPTSCRIPT_WORKSPACE_ID"] = await gptscript.create_workspace("directory")
+
+    new_client = GPTScript(GlobalOptions(
+        apiKey=os.getenv("OPENAI_API_KEY"),
+        env=[f"{k}={v}" for k, v in os.environ.items()],
+    ))
 
     # Create dataset
-    dataset = await gptscript.create_dataset(workspace_id, dataset_name, "this is a test dataset")
-    assert dataset.id != "", "Expected dataset id to be set"
-    assert dataset.name == dataset_name, "Expected dataset name to match"
-    assert dataset.description == "this is a test dataset", "Expected dataset description to match"
-    assert len(dataset.elements) == 0, "Expected dataset elements to be empty"
-
-    # Add an element
-    element_meta = await gptscript.add_dataset_element(workspace_id, dataset.id, "element1", b"element1 contents",
-                                                       "element1 description")
-    assert element_meta.name == "element1", "Expected element name to match"
-    assert element_meta.description == "element1 description", "Expected element description to match"
+    dataset_id = await new_client.add_dataset_elements([
+        DatasetElement(name="element1", contents="element1 contents", description="element1 description"),
+        DatasetElement(name="element2", binaryContents=b"element2 contents", description="element2 description"),
+    ], name="test-dataset", description="test dataset description")
 
     # Add two more elements
-    await gptscript.add_dataset_elements(workspace_id, dataset.id, [
-        DatasetElement(name="element2", contents=b"element2 contents", description="element2 description"),
-        DatasetElement(name="element3", contents=b"element3 contents", description="element3 description"),
-    ])
+    await new_client.add_dataset_elements([
+        DatasetElement(name="element3", contents="element3 contents", description="element3 description"),
+        DatasetElement(name="element4", contents="element3 contents", description="element4 description"),
+    ], datasetID=dataset_id)
 
     # Get the elements
-    e1 = await gptscript.get_dataset_element(workspace_id, dataset.id, "element1")
+    e1 = await new_client.get_dataset_element(dataset_id, "element1")
     assert e1.name == "element1", "Expected element name to match"
-    assert e1.contents == b"element1 contents", "Expected element contents to match"
+    assert e1.contents == "element1 contents", "Expected element contents to match"
     assert e1.description == "element1 description", "Expected element description to match"
-    e2 = await gptscript.get_dataset_element(workspace_id, dataset.id, "element2")
+    e2 = await new_client.get_dataset_element(dataset_id, "element2")
     assert e2.name == "element2", "Expected element name to match"
-    assert e2.contents == b"element2 contents", "Expected element contents to match"
+    assert e2.binaryContents == b"element2 contents", "Expected element contents to match"
     assert e2.description == "element2 description", "Expected element description to match"
-    e3 = await gptscript.get_dataset_element(workspace_id, dataset.id, "element3")
+    e3 = await new_client.get_dataset_element(dataset_id, "element3")
     assert e3.name == "element3", "Expected element name to match"
-    assert e3.contents == b"element3 contents", "Expected element contents to match"
+    assert e3.contents == "element3 contents", "Expected element contents to match"
     assert e3.description == "element3 description", "Expected element description to match"
 
     # List elements in the dataset
-    elements = await gptscript.list_dataset_elements(workspace_id, dataset.id)
-    assert len(elements) == 3, "Expected one element in the dataset"
+    elements = await new_client.list_dataset_elements(dataset_id)
+    assert len(elements) == 4, "Expected four elements in the dataset"
     assert elements[0].name == "element1", "Expected element name to match"
     assert elements[0].description == "element1 description", "Expected element description to match"
     assert elements[1].name == "element2", "Expected element name to match"
     assert elements[1].description == "element2 description", "Expected element description to match"
     assert elements[2].name == "element3", "Expected element name to match"
     assert elements[2].description == "element3 description", "Expected element description to match"
+    assert elements[3].name == "element4", "Expected element name to match"
+    assert elements[3].description == "element4 description", "Expected element description to match"
 
     # List datasets
-    datasets = await gptscript.list_datasets(workspace_id)
+    datasets = await new_client.list_datasets()
     assert len(datasets) > 0, "Expected at least one dataset"
-    assert datasets[0].id == dataset.id, "Expected dataset id to match"
-    assert datasets[0].name == dataset_name, "Expected dataset name to match"
-    assert datasets[0].description == "this is a test dataset", "Expected dataset description to match"
+    assert datasets[0].id == dataset_id, "Expected dataset id to match"
+    assert datasets[0].name == "test-dataset", "Expected dataset name to match"
+    assert datasets[0].description == "test dataset description", "Expected dataset description to match"
 
-    await gptscript.delete_workspace(workspace_id)
+    await gptscript.delete_workspace(os.environ["GPTSCRIPT_WORKSPACE_ID"])
 
 
 @pytest.mark.asyncio
