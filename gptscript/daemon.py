@@ -4,7 +4,7 @@ import os
 import tempfile
 
 
-def start_fastapi(app):
+def start_uvicorn(app):
     cert, key, client_cert = save_certificates_from_env()
     import uvicorn
     uvicorn.run(
