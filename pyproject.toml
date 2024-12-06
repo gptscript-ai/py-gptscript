@@ -19,6 +19,7 @@ dependencies = [
     "urllib3==2.2.1",
     "pydantic==2.9.2",
     "pywin32==306 ; sys_platform == 'win32'",
+    "uvicorn==0.32.1",
 ]
 
 [project.urls]
