@@ -6,6 +6,13 @@ import tempfile
 
 def start_uvicorn(app):
     cert, key, client_cert = save_certificates_from_env()
+
+    @app.on_event("shutdown")
+    def cleanup():
+        os.remove(cert)
+        os.remove(key)
+        os.remove(client_cert)
+
     import uvicorn
     uvicorn.run(
         app,
