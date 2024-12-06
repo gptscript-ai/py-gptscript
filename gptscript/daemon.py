@@ -43,6 +43,10 @@ def save_certificates_from_env():
     key_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
     client_cert_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
 
+    os.chmod(cert_file.name, 0o600)
+    os.chmod(key_file.name, 0o600)
+    os.chmod(client_cert_file.name, 0o600)
+
     cert_file.write(cert)
     key_file.write(key)
     client_cert_file.write(client_cert)
