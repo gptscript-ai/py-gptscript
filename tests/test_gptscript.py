@@ -126,8 +126,8 @@ async def test_list_models_from_provider(gptscript):
     )
     assert isinstance(models, list) and len(models) > 1, "Expected list_models to return a list"
     for model in models:
-        assert model.startswith("claude-3-"), "Unexpected model name"
-        assert model.endswith("from github.com/gptscript-ai/claude3-anthropic-provider"), "Unexpected model name"
+        assert model.id.startswith("claude-3-"), "Unexpected model name"
+        assert model.id.endswith("from github.com/gptscript-ai/claude3-anthropic-provider"), "Unexpected model name"
 
 
 @pytest.mark.asyncio
@@ -140,8 +140,8 @@ async def test_list_models_from_default_provider():
         )
         assert isinstance(models, list) and len(models) > 1, "Expected list_models to return a list"
         for model in models:
-            assert model.startswith("claude-3-"), "Unexpected model name"
-            assert model.endswith("from github.com/gptscript-ai/claude3-anthropic-provider"), "Unexpected model name"
+            assert model.id.startswith("claude-3-"), "Unexpected model name"
+            assert model.id.endswith("from github.com/gptscript-ai/claude3-anthropic-provider"), "Unexpected model name"
     finally:
         g.close()
 
