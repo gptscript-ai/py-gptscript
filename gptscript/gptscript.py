@@ -11,6 +11,7 @@ from gptscript.credentials import Credential, to_credential
 from gptscript.datasets import DatasetElementMeta, DatasetElement, DatasetMeta
 from gptscript.fileinfo import FileInfo
 from gptscript.frame import RunFrame, CallFrame, PromptFrame, Program
+from gptscript.openai import Model
 from gptscript.opts import GlobalOptions
 from gptscript.prompt import PromptResponse
 from gptscript.run import Run, RunBasicCommand, Options
@@ -164,16 +165,17 @@ class GPTScript:
     async def version(self) -> str:
         return await self._run_basic_command("version")
 
-    async def list_models(self, providers: list[str] = None, credential_overrides: list[str] = None) -> list[str]:
+    async def list_models(self, providers: list[str] = None, credential_overrides: list[str] = None) -> list[Model]:
         if self.opts.DefaultModelProvider != "":
             if providers is None:
                 providers = []
             providers.append(self.opts.DefaultModelProvider)
 
-        return (await self._run_basic_command(
+        res = await self._run_basic_command(
             "list-models",
             {"providers": providers, "credentialOverrides": credential_overrides}
-        )).split("\n")
+        )
+        return [Model(**model) for model in json.loads(res)]
 
     async def list_credentials(self, contexts: List[str] = None, all_contexts: bool = False) -> list[Credential] | str:
         if contexts is None:
