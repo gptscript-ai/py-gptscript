@@ -194,13 +194,25 @@ class CallFrame:
         self.llmResponse = llmResponse
 
 
+class PromptField:
+    def __init__(self,
+                 name: str = "",
+                 description: str = "",
+                 sensitive: bool | None = None,
+                 **kwargs,
+                 ):
+        self.name = name
+        self.description = description
+        self.sensitive = sensitive
+
+
 class PromptFrame:
     def __init__(self,
                  id: str = "",
                  type: RunEventType = RunEventType.prompt,
                  time: str = "",
                  message: str = "",
-                 fields: list[str] = None,
+                 fields: list[PromptField] = None,
                  metadata: dict[str, str] = None,
                  sensitive: bool = False,
                  **kwargs,
@@ -209,6 +221,10 @@ class PromptFrame:
         self.time = time
         self.message = message
         self.fields = fields
+        if self.fields is not None:
+            for i in range(len(self.fields)):
+                if isinstance(self.fields[i], dict):
+                    self.fields[i] = PromptField(**self.fields[i])
         self.metadata = metadata
         self.sensitive = sensitive
         self.type = type
