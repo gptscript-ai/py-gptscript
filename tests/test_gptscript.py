@@ -546,8 +546,11 @@ async def test_global_tools(gptscript):
                     event_output += output.content
             elif frame.type == RunEventType.callFinish:
                 call_finish_seen = True
+                for output in frame.output:
+                    event_output += output.content
 
-    run = gptscript.run(os.getcwd() + "/tests/fixtures/global-tools.gpt",
+    cwd = os.getcwd().removesuffix("/tests")
+    run = gptscript.run(cwd + "/tests/fixtures/global-tools.gpt",
                         Options(
                             disableCache=True,
                             credentialOverrides=["github.com/gptscript-ai/gateway:OPENAI_API_KEY"],
@@ -555,8 +558,9 @@ async def test_global_tools(gptscript):
                         event_handlers=[process_event],
                         )
 
-    assert "Hello!" in await run.text(), "Unexpected output from global tool test"
-    assert "Hello" in event_output, "Unexpected stream output from global tool test"
+    output = await run.text()
+    assert "Hello!" in output, "Unexpected output from global tool test: " + output
+    assert "Hello" in event_output, "Unexpected stream output from global tool test: " + event_output
 
     assert run_start_seen and call_start_seen and call_progress_seen and call_finish_seen and run_finish_seen, \
         f"One of these is False: {run_start_seen}, {call_start_seen}, {call_progress_seen}, {call_finish_seen}, {run_finish_seen}"
@@ -573,7 +577,7 @@ async def test_confirm(gptscript):
             confirm_event_found = True
             assert '"ls' in frame.input or '"dir' in frame.input, "Unexpected confirm input: " + frame.input
             await gptscript.confirm(AuthResponse(frame.id, True))
-        elif frame.type == RunEventType.callProgress:
+        elif frame.type == RunEventType.callProgress or frame.type == RunEventType.callFinish:
             for output in frame.output:
                 event_content += output.content
 
@@ -610,7 +614,7 @@ async def test_confirm_deny(gptscript):
             confirm_event_found = True
             assert '"ls"' in frame.input, "Unexpected confirm input: " + frame.input
             await gptscript.confirm(AuthResponse(frame.id, False, "I will not allow it!"))
-        elif frame.type == RunEventType.callProgress:
+        elif frame.type == RunEventType.callProgress or frame.type == RunEventType.callFinish:
             for output in frame.output:
                 event_content += output.content
 
@@ -637,9 +641,9 @@ async def test_prompt(gptscript):
         if frame.type == RunEventType.prompt:
             prompt_event_found = True
             assert len(frame.fields) == 1, "Unexpected number of fields: " + str(frame.fields)
-            assert "first name" in frame.fields[0], "Unexpected field: " + frame.fields[0]
-            await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0]: "Clicky"}))
-        elif frame.type == RunEventType.callProgress:
+            assert "first name" in frame.fields[0].name, "Unexpected field: " + frame.fields[0].name
+            await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0].name: "Clicky"}))
+        elif frame.type == RunEventType.callProgress or frame.type == RunEventType.callFinish:
             for output in frame.output:
                 event_content += output.content
 
@@ -667,10 +671,10 @@ async def test_prompt_with_metadata(gptscript):
         if frame.type == RunEventType.prompt:
             prompt_event_found = True
             assert len(frame.fields) == 1, "Unexpected number of fields: " + str(frame.fields)
-            assert "first name" in frame.fields[0], "Unexpected field: " + frame.fields[0]
+            assert "first name" in frame.fields[0].name, "Unexpected field: " + frame.fields[0].name
             assert "first_name" in frame.metadata, "Unexpected metadata: " + str(frame.metadata)
             assert frame.metadata["first_name"] == "Clicky", "Unexpected metadata: " + str(frame.metadata)
-            await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0]: "Clicky"}))
+            await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0].name: "Clicky"}))
 
     out = await gptscript.run(
         "sys.prompt",
@@ -691,8 +695,8 @@ async def test_prompt_without_prompt_allowed(gptscript):
         if frame.type == RunEventType.prompt:
             prompt_event_found = True
             assert len(frame.fields) == 1, "Unexpected number of fields: " + str(frame.fields)
-            assert "first name" in frame.fields[0], "Unexpected field: " + frame.fields[0]
-            await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0]: "Clicky"}))
+            assert "first name" in frame.fields[0].name, "Unexpected field: " + frame.fields[0].name
+            await gptscript.prompt(PromptResponse(frame.id, {frame.fields[0].name: "Clicky"}))
 
     tool = ToolDef(
         tools=["sys.prompt"],
@@ -727,7 +731,7 @@ async def test_run_file_with_metadata(gptscript):
 
 @pytest.mark.asyncio
 async def test_parse_with_metadata_then_run(gptscript):
-    cwd = os.getcwd().removesuffix("tests")
+    cwd = os.getcwd().removesuffix("/tests")
     tools = await gptscript.parse(cwd + "/tests/fixtures/parse-with-metadata.gpt")
     run = gptscript.evaluate(tools[0])
     assert "200" == await run.text(), "Expect file to have correct output"
