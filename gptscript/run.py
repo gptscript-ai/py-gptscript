@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import json
 from typing import Union, Any, Self, Callable, Awaitable
 
@@ -136,10 +137,8 @@ class Run:
                     self._err = "run encountered an error"
 
                 async for line in resp.aiter_lines():
-                    line = line.strip()
-                    line = line.removeprefix("data: ")
-                    line = line.strip()
-                    if line == "" or line == "[DONE]":
+                    line = line.strip().removeprefix("data: ").strip()
+                    if line == '' or line == '"[DONE]"':
                         continue
 
                     data = json.loads(line)
