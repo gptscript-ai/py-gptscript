@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [{ name = "Bill Maxwell", email = "bill@acorn.io" }]
 license = { file = "LICENSE" }
 dependencies = [
-    "certifi==2024.2.2",
+    "certifi==2024.7.4",
     "charset-normalizer==3.3.2",
     "httpx==0.27.0",
     "idna==3.6",
