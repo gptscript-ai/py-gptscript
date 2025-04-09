@@ -16,7 +16,7 @@ dependencies = [
     "idna==3.6",
     "requests==2.31.0",
     "tqdm==4.66.2",
-    "urllib3==2.2.1",
+    "urllib3==2.2.2",
     "pydantic==2.9.2",
     "pywin32==306 ; sys_platform == 'win32'",
     "uvicorn==0.32.1",
