@@ -81,7 +81,7 @@ def tool_list():
             name="echo",
             tools=["sys.exec"],
             description="Echoes the input",
-            arguments=ArgumentSchema(properties={"input": Property("The string input to echo")}),
+            arguments=ArgumentSchema(properties={"input": Property(description="The string input to echo")}),
             instructions=f"""
 ${shebang}
 echo ${input}
