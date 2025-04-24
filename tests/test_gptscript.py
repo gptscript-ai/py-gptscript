@@ -742,7 +742,8 @@ async def test_credentials(gptscript):
     name = "test-" + str(os.urandom(4).hex())
     now = datetime.now()
     res = await gptscript.create_credential(
-        Credential(toolName=name, env={"TEST": "test"}, expiresAt=now + timedelta(seconds=5)))
+        Credential(toolName=name, env={"TEST": "test"}, expiresAt=now + timedelta(seconds=5),
+                   checkParam="my-check-param"))
     assert not res.startswith("an error occurred"), "Unexpected error creating credential: " + res
 
     sleep(5)
@@ -757,6 +758,7 @@ async def test_credentials(gptscript):
     res = await gptscript.reveal_credential(name=name)
     assert not str(res).startswith("an error occurred"), "Unexpected error revealing credential: " + res
     assert res.env["TEST"] == "test", "Unexpected credential value: " + str(res)
+    assert res.checkParam == "my-check-param", "Unexpected credential value: " + str(res)
 
     res = await gptscript.delete_credential(name=name)
     assert not res.startswith("an error occurred"), "Unexpected error deleting credential: " + res

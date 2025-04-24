@@ -22,6 +22,7 @@ class Credential:
                  ephemeral: bool = False,
                  expiresAt: datetime = None,
                  refreshToken: str = "",
+                 checkParam: str = "",
                  **kwargs,
                  ):
         self.context = context
@@ -31,6 +32,7 @@ class Credential:
         self.ephemeral = ephemeral
         self.expiresAt = expiresAt
         self.refreshToken = refreshToken
+        self.checkParam = checkParam
 
         if self.env is None:
             self.env = {}
@@ -56,6 +58,7 @@ class Credential:
             "env": self.env,
             "ephemeral": self.ephemeral,
             "refreshToken": self.refreshToken,
+            "checkParam": self.checkParam,
         }
 
         if datetime_str != "":
@@ -95,4 +98,5 @@ def to_credential(c) -> Credential:
         ephemeral=c.get("ephemeral", False),
         expiresAt=expiresAt,
         refreshToken=c["refreshToken"],
+        checkParam=c.get("checkParam", "")
     )
